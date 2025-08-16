@@ -28,3 +28,6 @@ Ignorar pastas de cache
 
 Ignorar pasta de Fotos
 .BKP/
+
+Ignorar pasta de Fotos
+.node_modules/

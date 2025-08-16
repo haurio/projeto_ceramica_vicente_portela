@@ -8,17 +8,16 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <!-- Substitua os caminhos locais por URLs ou arquivos locais disponíveis -->
     <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/produtos_index.css">
+    <link rel="stylesheet" href="css/index_produtos.css">
     <link rel="stylesheet" href="css/index_empresa.css">
     <link rel="stylesheet" href="css/index_historia.css">
     <link rel="stylesheet" href="css/index_atendimento.css">
     <link rel="stylesheet" href="css/index_duvidas.css">
     <link rel="stylesheet" href="css/index_contato.css">
     <link rel="icon" type="image/png" href="image/ico.png">
-    <!-- Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 <body>
@@ -41,9 +40,9 @@
                         <li class="nav-item"><a class="nav-link text-white" href="#atendimento">Atendimento</a></li>
                         <li class="nav-item"><a class="nav-link text-white" href="#contato">Contato</a></li>
                     </ul>
-                <div class="nav-client-area">
-                    <a href="#cliente" class="btn-area-cliente">Área do Cliente</a>
-                </div>
+                    <div class="nav-client-area">
+                        <a href="#cliente" class="btn-area-cliente">Área do Cliente</a>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -100,7 +99,7 @@
                 <h2 class="section-title">Nossos Produtos</h2>
                 <div class="product-grid">
                     <div class="product-item">
-                        <img src="image/tijolo_laje_07x19x32.png" alt="tijolo_laje_07x19x32" class="product-image">
+                        <img src="image/tijolo_laje_07x19x32.png" alt="lajota_07x19x32" class="product-image">
                         <p class="product-name">Lajota 07x19x32cm</p>
                     </div>
                     <div class="product-item">
@@ -118,6 +117,39 @@
                 </div>
             </div>
         </section>
+        <!-- Modal para os Produtos -->
+        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalLabel" style="color: #2E3B4E;">VEDAÇÃO</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-content-container">
+                            <div class="product-image-container">
+                                <img src="" alt="Produto Selecionado" class="modal-product-image">
+                            </div>
+                            <div class="product-details">
+                                <ul class="product-specs">
+                                    <li><i class="fas fa-weight-hanging" style="color: #D32F2F;"></i></li>
+                                    <li><i class="fas fa-layer-group" style="color: #D32F2F;"></i></li>
+                                </ul>
+                            </div>
+                            <div class="calculator-section">
+                                <h5 style="color: #2E3B4E;">Calcule sua Obra!</h5>
+                                <div class="calculator-inputs">
+                                    <input type="number" id="altura" placeholder="Altura (m)" min="0" step="0.1" style="color: #333;">
+                                    <input type="number" id="comprimento" placeholder="Comprimento (m)" min="0" step="0.1" style="color: #333;">
+                                    <button type="button" id="calcularBtn" class="btn btn-primary">Calcular</button>
+                                </div>
+                                <p class="result-container" style="display: none;"><strong style="color: #2E3B4E;"><span id="resultado"></span></strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <section class="company-section" id="empresa">
             <div class="container">
                 <h3>A Cerâmica Vicente Portela</h3>
@@ -390,7 +422,6 @@
             </div>
         </div>
     </div>
-
     <footer>
         <div class="container">
             <p>© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>

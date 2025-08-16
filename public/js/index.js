@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (target) {
                 let offset = 0;
                 const navbarHeight = document.querySelector('.navbar').offsetHeight;
-                const extraPadding = 30; // Espaço adicional em pixels entre a navbar e a seção
+                const extraPadding = 30;
 
                 if (href === '#home') {
                     const button = document.querySelector('#home .call-to-action .btn.slider-btn');
@@ -173,18 +173,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData
             })
             .then(response => {
-                console.log('Status da resposta:', response.status, response.statusText); // Depuração
-                if (response.status >= 200 && response.status < 300) { // Sucesso HTTP (200-299)
+                console.log('Status da resposta:', response.status, response.statusText);
+                if (response.status >= 200 && response.status < 300) {
                     return response.text();
                 } else {
                     throw new Error('Erro na requisição: ' + response.statusText);
                 }
             })
             .then(data => {
-                console.log('Resposta do servidor:', data); // Depuração
+                console.log('Resposta do servidor:', data);
                 const form = document.querySelector('.atendimento-section form');
                 if (form) {
-                    form.reset(); // Limpar os campos primeiro
+                    form.reset();
                     if (typeof toastr !== 'undefined') {
                         try {
                             toastr.success('Mensagem enviada com sucesso!', 'Sucesso');
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(error => {
-                console.error('Erro no envio:', error); // Depuração
+                console.error('Erro no envio:', error);
                 if (typeof toastr !== 'undefined') {
                     try {
                         toastr.error('Erro ao enviar a mensagem: ' + error.message, 'Erro');
@@ -214,4 +214,91 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+
+    // Abrir modal ao clicar nos produtos e carregar especificações
+    const productItems = document.querySelectorAll('.product-item');
+    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    const modalImage = document.querySelector('#productModal .modal-product-image');
+    const productSpecs = document.querySelector('#productModal .product-specs');
+    const modalTitle = document.getElementById('productModalLabel');
+    const resultado = document.getElementById('resultado');
+    const resultContainer = document.querySelector('.result-container');
+    const alturaInput = document.getElementById('altura');
+    const comprimentoInput = document.getElementById('comprimento');
+
+    // Mapa de especificações por produto
+    const productSpecsMap = {
+        'lajota 07x19x32cm': { altura: 7, largura: 32, peso: '4kg / peça' },
+        'vedação 09x19x29cm': { altura: 9, largura: 29, peso: '3kg / peça' },
+        'vedação 11x19x29cm': { altura: 11, largura: 29, peso: '6kg / peça' },
+        'vedação 14x19x29cm': { altura: 14, largura: 29, peso: '7kg / peça' }
+    };
+
+    productItems.forEach(item => {
+        item.addEventListener('click', function () {
+            const productImg = this.querySelector('.product-image');
+            const productName = this.querySelector('.product-name').textContent.toLowerCase();
+            const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
+
+            if (productImg) {
+                modalImage.src = productImg.src;
+                modalImage.alt = productImg.alt;
+                modalTitle.textContent = productName.toUpperCase();
+                productSpecs.innerHTML = `
+                    <li><i class="fas fa-weight-hanging" style="color: #D32F2F;"></i> Peso: ${specs.peso}</li>
+                    <li><i class="fas fa-layer-group" style="color: #D32F2F;"></i> Peças / m²: ${Math.ceil(1 / ((specs.altura / 100) * (specs.largura / 100)))} Un.</li>
+                `;
+                productModal.show();
+                // Oculta o resultado e limpa os campos ao abrir o modal
+                resultContainer.style.display = 'none';
+                resultado.innerHTML = '';
+                alturaInput.value = '';
+                comprimentoInput.value = '';
+            }
+        });
+    });
+
+    // Lógica da calculadora
+    const calcularBtn = document.getElementById('calcularBtn');
+
+    // Remove quaisquer listeners anteriores
+    calcularBtn.replaceWith(calcularBtn.cloneNode(true));
+    const newCalcularBtn = document.getElementById('calcularBtn');
+
+    newCalcularBtn.addEventListener('click', function () {
+        const altura = parseFloat(alturaInput.value) || 0;
+        const comprimento = parseFloat(comprimentoInput.value) || 0;
+        const productName = modalTitle.textContent.toLowerCase();
+        const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
+
+        if (altura > 0 && comprimento > 0) {
+            // Limpa o resultado antes de atualizar
+            resultado.innerHTML = '';
+            // Calcula a área da parede
+            const areaParede = altura * comprimento;
+            // Calcula a área do tijolo em metros quadrados
+            const areaTijolo = (specs.altura / 100) * (specs.largura / 100);
+            // Calcula o número de peças por m²
+            const pecasPorMetroQuadrado = Math.ceil(1 / areaTijolo);
+            // Calcula o total de peças
+            const totalPecas = Math.ceil(areaParede * pecasPorMetroQuadrado);
+
+            // Atualiza o resultado
+            resultado.innerHTML = `<h5>Aproximadamente:</h5> <h3>${totalPecas} un.</h3>`;
+            resultContainer.style.display = 'block';
+            console.log(`Cálculo para ${productName}: altura=${altura}m, comprimento=${comprimento}m, área tijolo=${areaTijolo}m², peças/m²=${pecasPorMetroQuadrado}, total=${totalPecas} unidades`);
+
+            // Limpa os campos após o cálculo
+            alturaInput.value = '';
+            comprimentoInput.value = '';
+        } else {
+            resultContainer.style.display = 'none';
+            resultado.innerHTML = '';
+            if (typeof toastr !== 'undefined') {
+                toastr.warning('Por favor, insira valores válidos para Altura e Comprimento.', 'Aviso');
+            } else {
+                alert('Por favor, insira valores válidos para Altura e Comprimento.');
+            }
+        }
+    });
 });

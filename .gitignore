@@ -1,33 +1,36 @@
-Ignorar arquivos de ambiente
+# Ignorar arquivos de ambiente
+.env
+.env.local
+.env.*.local
 
-.env .env.local .env.*.local
+# Ignorar arquivos gerados ou temporários
+node_modules/
+dist/
+build/
+*.log
+*.tmp
 
-Ignorar arquivos gerados ou temporários
+# Ignorar arquivos de IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-node_modules/ dist/ build/ *.log *.tmp
+# Ignorar arquivos de sistema
+.DS_Store
+Thumbs.db
 
-Ignorar arquivos de IDEs e editores
+# Ignorar arquivos de compilação ou dependências específicas do projeto
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-.vscode/ .idea/ *.sublime-project *.sublime-workspace
+# Ignorar arquivos de backup
+*.bak
+*.backup
 
-Ignorar arquivos de sistema
-
-.DS_Store Thumbs.db
-
-Ignorar arquivos de compilação ou dependências específicas do projeto
-
-npm-debug.log* yarn-debug.log* yarn-error.log*
-
-Ignorar arquivos de backup
-
-*.bak *.backup
-
-Ignorar pastas de cache
-
+# Ignorar pastas de cache
 .cache/
 
-Ignorar pasta de Fotos
+# Ignorar pasta de fotos/BKP
 .BKP/
-
-Ignorar pasta de Fotos
-.node_modules/

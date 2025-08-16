@@ -1,0 +1,101 @@
+/* Estilização da seção de Perguntas Frequentes */
+.faq-section {
+    padding: 60px 0;
+    background-color: #f8f1e9; /* Fundo especificado */
+}
+
+.faq-section .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333; /* Cor consistente com outros títulos */
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.faq-section .accordion {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-section .accordion-item {
+    border: none;
+    border-bottom: 1px solid #dee2e6; /* Borda sutil para separar itens */
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.8); /* Branco transparente */
+    backdrop-filter: blur(5px); /* Efeito de vidro */
+}
+
+.faq-section .accordion-header {
+    background-color: transparent; /* Mantém transparência para o header */
+}
+
+.faq-section .accordion-button {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333; /* Cor do texto dos botões */
+    background-color: rgba(255, 255, 255, 0.8); /* Branco transparente */
+    backdrop-filter: blur(5px); /* Efeito de vidro */
+    padding: 15px;
+    border: none;
+    box-shadow: none;
+}
+
+.faq-section .accordion-button:not(.collapsed) {
+    color: #a31919; /* Vermelho para botão aberto, consistente com links */
+    background-color: rgba(255, 255, 255, 0.8); /* Branco transparente quando aberto */
+    backdrop-filter: blur(5px); /* Efeito de vidro */
+}
+
+.faq-section .accordion-button:focus {
+    box-shadow: none;
+}
+
+.faq-section .accordion-body {
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    color: #555; /* Cor do texto do corpo, legível contra o fundo */
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.8); /* Branco transparente */
+    backdrop-filter: blur(5px); /* Efeito de vidro */
+}
+
+.faq-section .accordion-body p {
+    margin-bottom: 15px;
+}
+
+.faq-section .accordion-body ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+.faq-section .accordion-body ul li {
+    margin-bottom: 10px;
+}
+
+.faq-section .accordion-body a {
+    color: #a31919; /* Vermelho para links, consistente com o projeto */
+    text-decoration: none;
+}
+
+.faq-section .accordion-body a:hover {
+    text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .faq-section .section-title {
+        font-size: 2rem;
+    }
+
+    .faq-section .accordion-button {
+        font-size: 1.1rem;
+        padding: 12px;
+    }
+
+    .faq-section .accordion-body {
+        font-size: 0.9rem;
+        padding: 15px;
+    }
+}

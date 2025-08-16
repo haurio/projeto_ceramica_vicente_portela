@@ -1,0 +1,205 @@
+/* Estilização da seção de contato */
+.contact-info {
+    background-color: #2E3B4E; /* Azul escuro */
+    padding: 40px 0;
+    color: #FFFFFF;
+    margin-top: 0;
+    position: relative;
+}
+
+.contact-info .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.contact-message {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.5;
+    position: relative;
+    z-index: 2;
+}
+
+.contact-title {
+    font-size: 2rem;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 10px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7); /* Alinha com o estilo do slider */
+}
+
+.contact-details {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.contact-info-left {
+    flex: 1;
+}
+
+.address-section {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.small-icon {
+    font-size: 1rem;
+    margin-right: 10px;
+    color: #D32F2F; /* Vermelho para ícones */
+}
+
+.address-text {
+    color: #D32F2F;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+}
+
+.contact-section {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.contact-section h5 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.contact-section p {
+    font-size: 1rem;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+    color: #FFFFFF;
+}
+
+.contact-section a {
+    color: #D32F2F; /* Vermelho para links */
+    text-decoration: none;
+}
+
+.contact-section a:hover {
+    text-decoration: underline;
+}
+
+.contact-icons {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+
+.contact-icons a {
+    color: #FFFFFF;
+    font-size: 2.5rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-icons a:hover {
+    color: #D32F2F; /* Vermelho no hover */
+}
+
+/* Modal de Mapa */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+.custom-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.modal-content {
+    background-color: rgba(46, 59, 78, 0.8); /* #2E3B4E com transparência */
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    max-width: 90%;
+    width: 900px;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 15px;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Lato', sans-serif;
+}
+
+.modal-title i {
+    color: #D32F2F;
+}
+
+.modal-body {
+    padding: 0;
+}
+
+.modal-body iframe {
+    border: 0;
+    border-radius: 0 0 10px 10px;
+    width: 100%;
+    height: 500px;
+}
+
+/* Remover botão de fechar */
+.modal-header .btn-close {
+    display: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .contact-info .contact-title {
+        font-size: 1.8rem;
+    }
+
+    .contact-info .contact-message p {
+        font-size: 0.9rem;
+    }
+
+    .contact-info .contact-details {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .contact-info .contact-info-left {
+        text-align: center;
+    }
+
+    .contact-info .address-section,
+    .contact-info .contact-section {
+        justify-content: center;
+    }
+
+    .contact-info .contact-icons a {
+        font-size: 2rem;
+    }
+}

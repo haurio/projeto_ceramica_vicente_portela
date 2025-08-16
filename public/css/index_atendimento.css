@@ -1,0 +1,120 @@
+.atendimento-section {
+    padding: 60px 0;
+    background-color: #2E3B4E; /* Fundo azul sólido */
+    position: relative;
+    z-index: 0;
+}
+
+.atendimento-section .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para destacar o texto */
+    position: relative;
+    z-index: 1;
+}
+
+.atendimento-section .intro-text {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.1rem;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+    line-height: 1.6;
+}
+
+.atendimento-section form {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: rgba(255, 255, 255, 0.7); /* Fundo mais transparente */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.form-group.full-width {
+    flex-basis: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    color: #333;
+}
+
+.form-control::placeholder {
+    color: #666;
+    opacity: 1;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.btn.submit-btn {
+    background-color: #cc0000;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: flex-end;
+}
+
+.btn.submit-btn:hover {
+    background-color: #a30000;
+}
+
+@media (max-width: 768px) {
+    .atendimento-section {
+        padding: 40px 0;
+    }
+    .atendimento-section form {
+        padding: 20px;
+        flex-direction: column;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .form-control {
+        font-size: 0.9rem;
+    }
+    .btn.submit-btn {
+        width: 100%;
+    }
+    .atendimento-section .section-title {
+        font-size: 2rem;
+    }
+    .atendimento-section .intro-text {
+        font-size: 1rem;
+    }
+}

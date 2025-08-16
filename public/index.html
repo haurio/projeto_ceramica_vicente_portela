@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerâmica Vicente Portela</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/produtos_index.css">
+    <link rel="stylesheet" href="css/index_empresa.css">
+    <link rel="stylesheet" href="css/index_historia.css">
+    <link rel="stylesheet" href="css/index_atendimento.css">
+    <link rel="stylesheet" href="css/index_duvidas.css">
+    <link rel="stylesheet" href="css/index_contato.css">
+    <link rel="icon" type="image/png" href="image/ico.png">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html">
+                    <img src="image/logo.png" alt="Cerâmica Vicente Portela" class="logo-img">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav navbar-nav-center">
+                        <li class="nav-item"><a class="nav-link text-white" href="#home">Home</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#produtos">Produtos</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#empresa">Empresa</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#historia">História</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#duvidas">Dúvidas</a></li>                        
+                        <li class="nav-item"><a class="nav-link text-white" href="#atendimento">Atendimento</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#contato">Contato</a></li>
+                    </ul>
+                <div class="nav-client-area">
+                    <a href="#cliente" class="btn-area-cliente">Área do Cliente</a>
+                </div>
+                </div>
+            </div>
+        </nav>
+        <div class="progress-container">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </header>
+    <main>
+        <section class="main-slider" id="home">
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide" style="background-image: url('image/tradicao.jpg');">
+                        <div class="slide-content">
+                            <h2 class="main-title">Vicente Portela</h2>
+                            <h2 class="slider-title cascade-first">Tradição</h2>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: url('image/stock.jpg');">
+                        <div class="slide-content">
+                            <h2 class="main-title">Vicente Portela</h2>
+                            <h2 class="slider-title cascade-first">Dedicação</h2>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: url('image/marcatilojo.jpg');">
+                        <div class="slide-content">
+                            <h2 class="main-title">Vicente Portela</h2>
+                            <h2 class="slider-title cascade-first">Excelência</h2>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: url('image/ceramica.jpg');">
+                        <div class="slide-content">
+                            <h2 class="main-title">Vicente Portela</h2>
+                            <h2 class="slider-title cascade-third">Compromisso</h2>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" style="background-image: url('image/local.jpg');">
+                        <div class="slide-content">
+                            <h2 class="main-title">Vicente Portela</h2>
+                            <h2 class="slider-title cascade-first">Ótimo Preço</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+                <div class="transition-layer"></div>
+            </div>
+        </section>
+        <section class="call-to-action">
+            <a href="https://api.whatsapp.com/send?phone=5533998076100&text=" class="btn slider-btn">Faça um orçamento</a>
+        </section>
+        <section class="products-section" id="produtos">
+            <div class="container">
+                <h2 class="section-title">Nossos Produtos</h2>
+                <div class="product-grid">
+                    <div class="product-item">
+                        <img src="image/tijolo_laje_07x19x32.png" alt="tijolo_laje_07x19x32" class="product-image">
+                        <p class="product-name">Lajota 07x19x32cm</p>
+                    </div>
+                    <div class="product-item">
+                        <img src="image/tijolo_vedacao_09x19x29.png" alt="tijolo_vedacao_09x19x29" class="product-image">
+                        <p class="product-name">Vedação 09x19x29cm</p>
+                    </div>
+                    <div class="product-item">
+                        <img src="image/tijolo_vedacao_11x19x29.png" alt="tijolo_vedacao_11x19x29" class="product-image">
+                        <p class="product-name">Vedação 11x19x29cm</p>
+                    </div>
+                    <div class="product-item">
+                        <img src="image/tijolo_vedacao_14x19x29.png" alt="tijolo_vedacao_14x19x29" class="product-image">
+                        <p class="product-name">Vedação 14x19x29cm</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="company-section" id="empresa">
+            <div class="container">
+                <h3>A Cerâmica Vicente Portela</h3>
+                <p>Localizada na cidade de Engenheiro Caldas-MG no vale do Rio doce. Atendemos desde construtoras, fábricas de lajes e revendas até o consumidor final.</p>
+                <p>A Cerâmica Vicente Portela fabrica produtos para a construção civil: tijolos, blocos estruturais e de vedação, bem como lajotas de todas as medidas.</p>
+                <p>Nossos produtos são cuidadosamente acompanhados em cada etapa de seu processo de fabricação. Primeiro, realizamos a extração da argila em nossa jazida, selecionando a melhor matéria-prima. Após, confeccionamos cada peça através de nossa maromba de alta tecnologia. Em seguida, os produtos passam pelos secadores para se prepararem para a queima. Então, efetuamos a queima da cerâmica em temperatura ideal dentro de nossos fornos aquecidos com cavaco de madeira. Por fim, os materiais são cautelosamente estocados e estão prontos paras irem até nossos clientes. Nossas entregas são feitas à granel.</p>
+                <p>A Cerâmica Vicente Portela possui o Certificado PSQ (Programa Setorial de Qualidade) e é enquadrada nas Normas da ABNT, atendendo ao padrão de qualidade, segurança e design exigido pelo mercado.</p>
+                <p>Contamos, ainda, com o que há de mais moderno em equipamentos, como forno túnel contínuo e automatização de ponta. A marca Cerâmica Vicente Portela é sinônimo de qualidade, agilidade e pontualidade.</p>
+                <h3>Missão</h3>
+                <p>Produzir e comercializar um material com excelência de qualidade e preço justo para construção dos sonhos dos nossos clientes. Esta é a nossa missão.</p>
+                <h3>Visão</h3>
+                <p>Ser referência na indústria cerâmica, oferecendo aos nossos clientes e parceiros uma relação duradoura, com foco no crescimento, rentabilidade e responsabilidade socioambiental.</p>
+                <h3>Valores</h3>
+                <p>Agimos com propósito; Entregamos produtos com excelência; Construímos juntos; Trabalhamos com inovação, ética e responsabilidade; Estamos 1% melhores todos os dias.</p>
+                <h3 style="display: none;">Vídeo Institucional</h3>
+                <div id="player" style="display: none;">
+                    <iframe src="" frameborder="0" allowfullscreen="" class="video"></iframe>
+                </div>
+            </div>
+        </section>
+        <section class="history-section" id="historia">
+            <div class="container">
+                <h2 class="section-title">História da Família e da Cerâmica</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <img src="image/bisavo.jpg" alt="Bisavô em 1940" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>1940 - Migração da Familia</h3>
+                            <p>A familia migrou de Pontevedra, Principado da Galícia, Espanha, para o Brasil, chegando ao Rio de Janeiro-RJ, marcando o início da jornada da família no novo continente.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="image/Tombos.jpg" alt="Tombos-MG" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>Tombos-MG - O Início</h3>
+                            <p>A família se estabeleceu em Tombos-MG, onde tudo começou, dando os primeiros passos para o futuro na indústria cerâmica.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="image/Telha.jpg" alt="Primeira Cerâmica de Telhas" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>Primeira Cerâmica de Telhas</h3>
+                            <p>Em sociedade familiar, foi fundada a primeira cerâmica de telhas, consolidando a tradição cerâmica da família.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="image/tradicao.jpg" alt="Cerâmica de Tijolos" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>Cerâmica de Tijolos</h3>
+                            <p>A família expandiu suas atividades com a produção de cerâmica de tijolos, fortalecendo sua presença no mercado.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="image/Trator.jpg" alt="Máquina em 1996" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>1996 - Introdução da Máquina</h3>
+                            <p>Adquiriram uma máquina, como um trator, para auxiliar nos trabalhos, modernizando o processo produtivo.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="image/local.jpg" alt="Nascimento da Cerâmica Vicente Portela" class="timeline-image">
+                        <div class="timeline-content">
+                            <h3>2009 - Nascimento da Cerâmica Vicente Portela</h3>
+                            <p>A Cerâmica Vicente Portela foi fundada em homenagem ao patriarca Bernardino Vicente Portela, marcando um novo capítulo.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <img src="#" alt="Delfim Fernandez Portella" class="timeline-image missing-image">
+                        <div class="timeline-content">
+                            <h3>Atualidade - Administração por Delfim Fernandez Portella</h3>
+                            <p>Atualmente, a cerâmica é administrada por Delfim Fernandez Portella. [Foto a ser adicionada].</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="faq-section" id="duvidas">
+            <div class="container">
+                <h2 class="section-title">Perguntas Frequentes</h2>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                Como Pedir Orçamento?
+                            </button>
+                        </h3>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p><strong>É muito fácil falar conosco!</strong></p>
+                                <p>Você pode solicitar um orçamento de várias maneiras:</p>
+                                <ul>
+                                    <li>Visitando nossa empresa na Rodovia Margem Br 116, Km 455,5, S/N - Córrego das Pedras - Zona Rural, Eng. Caldas - MG, 35130-000;</li>
+                                    <li>Ligando para nossa equipe de vendas ou enviando mensagem no WhatsApp, tel: <a href="https://api.whatsapp.com/send?phone=5533998076100&text=" target="_blank">(33) 99807-6100</a>;</li>
+                                    <li>Enviando um e-mail para <a href="mailto:noreplay@ceramicavicenteportela.com.br">noreplay@ceramicavicenteportela.com.br</a>;</li>
+                                    <li>Enviando mensagem através da aba Atendimento e selecionando o assunto, um e-mail será enviado para nossas equipes.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Vendem para Pessoas Físicas?
+                            </button>
+                        </h3>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Sim, vendemos para pessoas físicas e jurídicas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Quais as Formas de Pagamento?
+                            </button>
+                        </h3>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Você pode optar por:</p>
+                                <ul>
+                                    <li>À vista;</li>
+                                    <li>PIX;</li>
+                                    <li>Depósito em conta;</li>
+                                    <li>Boleto bancário;</li>
+                                    <li>Cartão de débito;</li>
+                                    <li>Cartão de crédito.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="atendimento-section" id="atendimento">
+            <div class="container">
+                <h2 class="section-title">Envie uma mensagem</h2>
+                <p class="intro-text">Para nós da Cerâmica Vicente Portela é sempre um prazer ouvir você. Escreva sua mensagem, crítica ou sugestão. Para maiores informações preencha o formulário abaixo, nossa equipe de atendimento irá entrar em contato o mais breve possível por telefone ou e-mail.</p>
+                <form action="http://localhost:3000/send-email" method="post" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome Completo" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="endereco" name="endereco" class="form-control" placeholder="Endereço" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" id="cidade" name="cidade" class="form-control" placeholder="Cidade" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="estado" name="estado" class="form-control" required>
+                                <option value="" disabled selected>Estado</option>
+                                <option value="AC">Acre</option>
+                                <option value="AL">Alagoas</option>
+                                <option value="AP">Amapá</option>
+                                <option value="AM">Amazonas</option>
+                                <option value="BA">Bahia</option>
+                                <option value="CE">Ceará</option>
+                                <option value="DF">Distrito Federal</option>
+                                <option value="ES">Espírito Santo</option>
+                                <option value="GO">Goiás</option>
+                                <option value="MA">Maranhão</option>
+                                <option value="MT">Mato Grosso</option>
+                                <option value="MS">Mato Grosso do Sul</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="PA">Pará</option>
+                                <option value="PB">Paraíba</option>
+                                <option value="PR">Paraná</option>
+                                <option value="PE">Pernambuco</option>
+                                <option value="PI">Piauí</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="RN">Rio Grande do Norte</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                                <option value="RO">Rondônia</option>
+                                <option value="RR">Roraima</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="SE">Sergipe</option>
+                                <option value="TO">Tocantins</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="tel" id="telefone" name="telefone" class="form-control" placeholder="Telefone" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <select id="assunto" name="assunto" class="form-control" required>
+                                <option value="" disabled selected>Selecione o Assunto</option>
+                                <option value="Reclamações">Reclamações</option>
+                                <option value="Sugestões">Sugestões</option>
+                                <option value="Elogios">Elogios</option>
+                                <option value="Compras">Compras</option>
+                                <option value="Dúvidas">Dúvidas</option>
+                                <option value="Cobranças">Cobranças</option>
+                                <option value="Parcerias">Parcerias</option>
+                                <option value="Orçamentos">Orçamentos</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="file" id="anexo" name="anexo" class="form-control" accept=".pdf,.jpg,.png,.doc,.docx" multiple>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <textarea id="mensagem" name="mensagem" class="form-control" placeholder="Deixe sua mensagem." rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn submit-btn">Enviar Mensagem</button>
+                </form>
+            </div>
+        </section>
+        <section class="contact-info" id="contato">
+            <div class="container">
+                <div class="contact-message">
+                    <h1 class="contact-title">ENTRE EM CONTATO</h1>
+                    <p>Nossa Equipe está sempre pronta para atender você! Se você tiver dúvidas, precisar de informações adicionais sobre nossos produtos ou quiser solicitar um orçamento, estamos à disposição para ajudar.</p>
+                </div>
+                <div class="contact-details">
+                    <div class="contact-info-left">
+                        <div class="address-section">
+                            <i class="fas fa-map-marker-alt small-icon"></i>
+                            <div>
+                                <h5><strong>Endereço:</strong></h5>
+                                <p class="address-text">Rodovia Margem Br 116, Km 455,5, S/N - Córrego das Pedras - Zona Rural, Eng. Caldas - MG, 35130-000</p>
+                            </div>
+                        </div>
+                        <div class="contact-section">
+                            <i class="fas fa-phone small-icon"></i>
+                            <div>
+                                <h5><strong>Telefone/WhatsApp:</strong></h5>
+                                <p><a href="https://api.whatsapp.com/send?phone=5533998076100&text=" target="_blank">(33) 99807-6100</a></p>
+                            </div>
+                        </div>
+                        <div class="contact-section">
+                            <i class="fas fa-envelope small-icon"></i>
+                            <div>
+                                <h5><strong>E-mail:</strong></h5>
+                                <p><a href="mailto:noreplay@gmail.com">noreplay@gmail.com</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-icons">
+                        <a href="#" class="map-icon" data-bs-toggle="modal" data-bs-target="#mapModal"><i class="fas fa-map-marker-alt"></i></a>
+                        <a href="https://www.facebook.com/334276696434668?ref=_xav_ig_profile_page_web" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/cer.vicenteportela/" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://api.whatsapp.com/send?phone=5533998076100&text=" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para o Mapa -->
+    <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl custom-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mapModalLabel"><i class="fas fa-map-marker-alt"></i> Localização</h5>
+                </div>
+                <div class="modal-body">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10520.41789121759!2d-42.049247211110796!3d-19.191308724412636!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xb05b48c0519bb3%3A0xdf71ef2a3b9e466d!2sCer%C3%A2mica%20Vicente%20Portela%20LTDA!5e1!3m2!1spt-PT!2spt!4v1755268322112!5m2!1spt-PT!2spt" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>
+            <span class="powered-by">powered by Haurio Vieira</span>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+.history-section {
+    padding: 60px 0;
+    background-color: #f8f1e9;
+}
+
+.history-section .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.timeline-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-image:hover {
+    transform: scale(1.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.missing-image {
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.timeline-content {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #cc0000;
+    margin-bottom: 10px;
+}
+
+.timeline-content p {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.1rem;
+    color: #444;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .timeline-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    .timeline-image {
+        width: 150px;
+        height: 150px;
+    }
+    .timeline-image:hover {
+        transform: none; /* Desativa o hover em telas pequenas para evitar sobreposição */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}

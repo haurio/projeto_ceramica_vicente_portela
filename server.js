@@ -1,111 +1,122 @@
 const express = require('express');
 const path = require('path');
-const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
-const multer = require('multer');
-require('dotenv').config();
+const session = require('express-session');
+const cors = require('cors');
+require('dotenv').config({ debug: false });
+require('express-async-errors');
+const logger = require('./utils/logger');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Configuração do armazenamento de upload
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// Verificar se SESSION_SECRET está definido
+if (!process.env.SESSION_SECRET) {
+    logger.error('SESSION_SECRET não está definido no arquivo .env', { module: 'server' });
+    process.exit(1);
+}
+
+// Configurar CORS
+app.use(cors({
+    origin: 'http://localhost:3000', // Substitua pela origem do frontend
+    credentials: true // Permite o envio de cookies
+}));
 
 // Middleware para processar dados do formulário
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Middleware para sessões
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Use true em produção com HTTPS
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, // 24 horas
+        sameSite: 'lax' // Ajuste para 'none' em produção com HTTPS
+    }
+}));
 
 // Servir arquivos estáticos da pasta "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuração do transporter (serviço SMTP)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+// Importar rotas
+const authRoutes = require('./routes/authRoutes');
+const registerRoutes = require('./routes/registerRoutes');
+const funcionariosRoutes = require('./routes/funcionariosRoutes');
 
-// Teste de conexão SMTP
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('Erro na conexão SMTP:', error);
-  } else {
-    console.log('Conexão SMTP OK');
-  }
-});
+// Usar rotas
+app.use(authRoutes);
+app.use(registerRoutes);
+app.use(funcionariosRoutes);
 
-// Rota principal -> envia o index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Rota para processar o formulário com upload
-app.post('/send-email', upload.array('anexo'), (req, res) => {
-  console.log('Dados recebidos:', req.body, req.files); // Log dos dados recebidos para depuração
-  const { nome, endereco, cidade, estado, telefone, email, mensagem, assunto } = req.body;
-  const attachments = req.files || [];
-
-  if (!nome || !email || !mensagem) {
-    console.error('Campos obrigatórios ausentes:', { nome, email, mensagem });
-    return res.status(400).send('Campos obrigatórios (nome, email, mensagem) não preenchidos.');
-  }
-
-  const mailOptions = {
-    from: email || process.env.SMTP_USER,
-    to: process.env.EMAIL_TO,
-    subject: `Formulário de Contato - Cerâmica Vicente Portela - ${assunto || 'Sem Assunto'}`,
-    html: `
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }
-          h2 { color: #cc0000; text-align: center; }
-          p { margin: 10px 0; }
-          strong { color: #000; }
-          .footer { font-size: 0.9em; color: #666; text-align: center; margin-top: 20px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h2>Nova Mensagem Recebida</h2>
-          <p><strong>Assunto:</strong> ${assunto || 'Sem Assunto'}</p>
-          <p><strong>Nome:</strong> ${nome || 'Não informado'}</p>
-          <p><strong>Endereço:</strong> ${endereco || 'Não informado'}</p>
-          <p><strong>Cidade:</strong> ${cidade || 'Não informado'}</p>
-          <p><strong>Estado:</strong> ${estado || 'Não informado'}</p>
-          <p><strong>Telefone:</strong> ${telefone || 'Não informado'}</p>
-          <p><strong>E-mail:</strong> <a href="mailto:${email || 'Não informado'}">${email || 'Não informado'}</a></p>
-          <p><strong>Mensagem:</strong><br>${mensagem || 'Nenhuma mensagem'}</p>
-          ${attachments.length > 0 ? '<p><strong>Anexos:</strong> ' + attachments.map(file => file.originalname).join(', ') + '</p>' : ''}
-          <div class="noreply">⚠ Este e-mail foi gerado automaticamente. Por favor, não responda.</div>
-          <div class="footer">Enviado em: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</div>
-        </div>
-      </body>
-      </html>
-    `,
-    text: `Assunto: ${assunto || 'Sem Assunto'}\nNome: ${nome || 'Não informado'}\nEndereço: ${endereco || 'Não informado'}\nCidade: ${cidade || 'Não informado'}\nEstado: ${estado || 'Não informado'}\nTelefone: ${telefone || 'Não informado'}\nE-mail: ${email || 'Não informado'}\nMensagem: ${mensagem || 'Nenhuma mensagem'}${attachments.length > 0 ? '\nAnexos: ' + attachments.map(file => file.originalname).join(', ') : ''}\nEnviado em: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
-    attachments: attachments.map(file => ({
-      filename: file.originalname,
-      content: file.buffer
-    }))
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error('Erro ao enviar e-mail:', error); // Log detalhado do erro
-      res.status(500).send('Erro ao enviar a mensagem: ' + error.message);
+// Rota para servir Home.html
+app.get('/Home.html', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        res.sendFile(path.join(__dirname, 'public', 'Home.html'));
     } else {
-      console.log('E-mail enviado:', info.response);
-      res.send('Mensagem enviada com sucesso!');
+        res.redirect('/login');
     }
-  });
+});
+
+// Rota para servir funcionarios.html
+app.get('/funcionarios.html', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        res.sendFile(path.join(__dirname, 'public', 'funcionarios.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+
+// Rota para verificar sessão
+app.get('/check-session', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        res.status(200).json({ authenticated: true });
+    } else {
+        res.status(401).json({ authenticated: false });
+    }
+});
+
+// Rota para logout
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            logger.error('Erro ao realizar logout', { module: 'server', stack: err.stack });
+            return res.status(500).json({ message: 'Erro ao realizar logout' });
+        }
+        logger.info('Logout realizado com sucesso', { module: 'server' });
+        res.status(200).json({ message: 'Logout realizado com sucesso' });
+    });
+});
+
+// Rota para receber logs do cliente
+app.post('/log-client', (req, res) => {
+    const { msg, level, module, stack } = req.body;
+    const validLevels = ['error', 'warn', 'info', 'success'];
+    const logLevel = validLevels.includes(level) ? level : 'info';
+
+    try {
+        logger.log({
+            level: logLevel,
+            message: msg,
+            module,
+            stack
+        });
+        res.status(200).json({ message: 'Log registrado no servidor' });
+    } catch (err) {
+        logger.error('Erro ao registrar log do cliente', { module: 'server', stack: err.stack });
+        res.status(200).json({ message: 'Log registrado com falha' });
+    }
+});
+
+// Middleware global para tratamento de erros
+app.use((err, req, res, next) => {
+    logger.error(`Erro não tratado: ${err.message}`, { module: 'server', stack: err.stack });
+    res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    logger.info(`Servidor rodando em http://localhost:${PORT}`, { module: 'server' });
 });

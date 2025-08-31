@@ -1,0 +1,132 @@
+-- Tabela de Funcionários
+CREATE TABLE funcionarios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf CHAR(14) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    departamento_id INT NOT NULL, -- chave estrangeira
+    cargo_id INT NOT NULL,        -- chave estrangeira
+    status ENUM('Ativo', 'Afastado', 'Demitido') NOT NULL,
+    data_admissao DATE NOT NULL,
+    data_demissao DATE NULL,
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP 
+                 ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (departamento_id) REFERENCES departamentos(id),
+    FOREIGN KEY (cargo_id) REFERENCES cargos(id)
+);
+
+-- Tabela de Dados Pessoais dos Funcionários
+CREATE TABLE funcionarios_dados_pessoais (
+    funcionario_id INT PRIMARY KEY,
+    data_nascimento DATE NOT NULL,
+    cidade_nascimento VARCHAR(100) NOT NULL,
+    estado_nascimento CHAR(2) NOT NULL,
+    nacionalidade VARCHAR(50) NOT NULL,
+    escolaridade VARCHAR(50) NOT NULL,
+    telefone VARCHAR(15) NOT NULL,
+    estado_civil VARCHAR(20) NOT NULL,
+    titulo_eleitor VARCHAR(20) NULL,
+    zona_eleitoral VARCHAR(10) NULL,
+    secao_eleitoral VARCHAR(10) NULL,
+    reservista VARCHAR(20) NULL,
+    categoria_reservista VARCHAR(20) NULL,
+    rg VARCHAR(20) NOT NULL,
+    data_emissao_rg DATE NOT NULL,
+    orgao_emissor_rg VARCHAR(10) NOT NULL,
+    estado_emissor_rg CHAR(2) NOT NULL,
+    nome_pai VARCHAR(100) NOT NULL,
+    nome_mae VARCHAR(100) NOT NULL,
+    conjuge VARCHAR(100) NULL,
+    possui_filhos ENUM('sim', 'nao') NOT NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+-- Tabela de Endereços dos Funcionários
+CREATE TABLE funcionarios_enderecos (
+    funcionario_id INT PRIMARY KEY,
+    cep CHAR(9) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    estado CHAR(2) NOT NULL,
+    rua VARCHAR(100) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    bairro VARCHAR(50) NOT NULL,
+    complemento VARCHAR(100) NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+-- Tabela de Dados Profissionais dos Funcionários
+CREATE TABLE funcionarios_dados_profissionais (
+    funcionario_id INT PRIMARY KEY,
+    ctps VARCHAR(20) NOT NULL,
+    ctps_estado CHAR(2) NOT NULL,
+    ctps_data_emissao DATE NOT NULL,
+    pis CHAR(14) NOT NULL,
+    salario DECIMAL(10, 2) NOT NULL,
+    carga_horaria_mensal INT NOT NULL,
+    carga_horaria_semanal INT NOT NULL,
+    periodo_experiencia INT NOT NULL CHECK (periodo_experiencia BETWEEN 0 AND 90),
+    adicional_noturno DECIMAL(5, 2) NULL CHECK (adicional_noturno BETWEEN 0 AND 100),
+    primeiro_emprego ENUM('sim', 'nao') NULL,
+    motivo_saida VARCHAR(100) NULL,
+    horario_inicio_semana TIME NOT NULL,
+    horario_fim_semana TIME NOT NULL,
+    horario_inicio_sabado TIME NULL,
+    horario_fim_sabado TIME NULL,
+    horario_inicio_domingo TIME NULL,
+    horario_fim_domingo TIME NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+-- Tabela de Dias de Folga dos Funcionários
+CREATE TABLE funcionarios_dias_folga (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    funcionario_id INT,
+    dia ENUM('domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado') NOT NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+-- Tabela de Dados Bancários dos Funcionários
+CREATE TABLE funcionarios_dados_bancarios (
+    funcionario_id INT PRIMARY KEY,
+    forma_pagamento ENUM('PIX','Transferência','Dinheiro') NOT NULL,
+    chave_pix VARCHAR(50) NULL,
+    banco_id INT NULL,
+    agencia VARCHAR(10) NULL,
+    conta VARCHAR(20) NULL,
+    tipo_conta ENUM('Corrente','Poupança') NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id),
+    FOREIGN KEY (banco_id) REFERENCES bancos(id)
+);
+
+-- Tabela de Dependentes dos Funcionários
+CREATE TABLE funcionarios_dependentes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    funcionario_id INT,
+    nome VARCHAR(100) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    parentesco VARCHAR(50) NOT NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+
+-- Departamentos
+CREATE TABLE departamentos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Cargos
+CREATE TABLE cargos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    departamento_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    FOREIGN KEY (departamento_id) REFERENCES departamentos(id)
+);
+
+-- Tabela de Bancos Brasileiros
+CREATE TABLE bancos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    codigo CHAR(3) NOT NULL UNIQUE
+);

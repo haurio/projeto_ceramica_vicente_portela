@@ -1,14 +1,31 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Função para enviar erros ao servidor
+    function logClientError(message, error) {
+        console.error(message, error); // Manter para depuração local
+        fetch('/log-client-error', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message,
+                stack: error ? error.stack : 'Sem stack trace'
+            })
+        })
+        .catch(fetchError => {
+            console.error('Erro ao enviar log para o servidor:', fetchError);
+        });
+    }
+
     // Configuração inicial do toastr com depuração
     if (typeof toastr !== 'undefined') {
         toastr.options = {
             positionClass: 'toast-top-right',
-            timeOut: 5000,
+            timeOut: 1000, // Reduzido para 1 segundo
             closeButton: true
         };
         console.log('toastr inicializado com sucesso');
     } else {
         console.warn('toastr não está definido. Notificações serão exibidas no console e como alert.');
+        logClientError('toastr não está definido em index.js');
     }
 
     // Rolagem suave para todas as seções do menu com espaço extra
@@ -16,74 +33,88 @@ document.addEventListener('DOMContentLoaded', function () {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const href = this.getAttribute('href');
-            const target = document.querySelector(href);
-            if (target) {
-                let offset = 0;
-                const navbarHeight = document.querySelector('.navbar').offsetHeight;
-                const extraPadding = 30;
+            try {
+                const target = document.querySelector(href);
+                if (target) {
+                    let offset = 0;
+                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                    const extraPadding = 30;
 
-                if (href === '#home') {
-                    const button = document.querySelector('#home .call-to-action .btn.slider-btn');
-                    if (button) {
-                        const buttonTop = button.getBoundingClientRect().top + window.scrollY;
-                        offset = buttonTop - navbarHeight - extraPadding;
+                    if (href === '#home') {
+                        const button = document.querySelector('#home .call-to-action .btn.slider-btn');
+                        if (button) {
+                            const buttonTop = button.getBoundingClientRect().top + window.scrollY;
+                            offset = buttonTop - navbarHeight - extraPadding;
+                        }
+                    } else if (href === '#produtos' || href === '#historia' || href === '#duvidas' || href === '#atendimento') {
+                        const title = target.querySelector('.section-title');
+                        if (title) {
+                            offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+                        }
+                    } else if (href === '#empresa') {
+                        const title = target.querySelector('h3');
+                        if (title) {
+                            offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+                        }
+                    } else if (href === '#contato') {
+                        const title = target.querySelector('.contact-title');
+                        if (title) {
+                            offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+                        }
+                    } else {
+                        offset = target.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
                     }
-                } else if (href === '#produtos' || href === '#historia' || href === '#duvidas' || href === '#atendimento') {
-                    const title = target.querySelector('.section-title');
-                    if (title) {
-                        offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
-                    }
-                } else if (href === '#empresa') {
-                    const title = target.querySelector('h3');
-                    if (title) {
-                        offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
-                    }
-                } else if (href === '#contato') {
-                    const title = target.querySelector('.contact-title');
-                    if (title) {
-                        offset = title.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
-                    }
+
+                    if (offset < 0) offset = 0;
+
+                    window.scrollTo({
+                        top: offset,
+                        behavior: 'smooth'
+                    });
                 } else {
-                    offset = target.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+                    throw new Error(`Elemento com seletor ${href} não encontrado`);
                 }
-
-                if (offset < 0) offset = 0;
-
-                window.scrollTo({
-                    top: offset,
-                    behavior: 'smooth'
-                });
+            } catch (error) {
+                logClientError(`Erro ao processar rolagem suave para ${href}`, error);
             }
         });
     });
 
     // Inicializa o Swiper
-    var swiper = new Swiper('.swiper-container', {
-        effect: 'fade',
-        fadeEffect: { crossFade: true },
-        grabCursor: true,
-        centeredSlides: true,
-        slidesPerView: 'auto',
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        autoplay: { delay: 5000, disableOnInteraction: false },
-        loop: true,
-    });
+    try {
+        var swiper = new Swiper('.swiper-container', {
+            effect: 'fade',
+            fadeEffect: { crossFade: true },
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: 'auto',
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            autoplay: { delay: 5000, disableOnInteraction: false },
+            loop: true,
+        });
+    } catch (error) {
+        logClientError('Erro ao inicializar Swiper', error);
+    }
 
     // Adiciona blocos à camada de transição
     const transitionLayer = document.querySelector('.transition-layer');
     if (transitionLayer) {
-        const rows = 8;
-        const cols = 12;
-        for (let i = 0; i < rows * cols; i++) {
-            const block = document.createElement('div');
-            block.className = 'block';
-            const row = Math.floor(i / cols) + 1;
-            const col = (i % cols) + 1;
-            block.style.gridArea = `${row} / ${col} / span 1 / span 1`;
-            const delay = (row * 0.05 + col * 0.03);
-            block.style.animationDelay = `${delay}s`;
-            transitionLayer.appendChild(block);
+        try {
+            const rows = 8;
+            const cols = 12;
+            for (let i = 0; i < rows * cols; i++) {
+                const block = document.createElement('div');
+                block.className = 'block';
+                const row = Math.floor(i / cols) + 1;
+                const col = (i % cols) + 1;
+                block.style.gridArea = `${row} / ${col} / span 1 / span 1`;
+                const delay = (row * 0.05 + col * 0.03);
+                block.style.animationDelay = `${delay}s`;
+                transitionLayer.appendChild(block);
+            }
+        } catch (error) {
+            logClientError('Erro ao adicionar blocos à camada de transição', error);
         }
     }
 
@@ -93,7 +124,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function startProgress() {
         let progress = 0;
-        if (!progressBar) return;
+        if (!progressBar) {
+            logClientError('Barra de progresso não encontrada');
+            return;
+        }
         progressBar.style.width = '0%';
         clearInterval(progressInterval);
         progressInterval = setInterval(() => {
@@ -125,40 +159,54 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function alignButtonWithSlide() {
-        var activeSlide = swiper.slides[swiper.activeIndex];
-        var slideRect = activeSlide.getBoundingClientRect();
-        var windowWidth = window.innerWidth;
-        var slideCenter = slideRect.left + slideRect.width / 2;
-        var button = document.querySelector('.call-to-action .btn.slider-btn');
-        if (button) {
-            var buttonWidth = button.offsetWidth;
-            var newMarginLeft = slideCenter - windowWidth / 2;
-            var maxMargin = windowWidth / 2 - buttonWidth / 2 - 20;
-            if (newMarginLeft > maxMargin) newMarginLeft = maxMargin;
-            if (newMarginLeft < -maxMargin) newMarginLeft = -maxMargin;
-            button.style.marginLeft = newMarginLeft + 'px';
+        try {
+            var activeSlide = swiper.slides[swiper.activeIndex];
+            var slideRect = activeSlide.getBoundingClientRect();
+            var windowWidth = window.innerWidth;
+            var slideCenter = slideRect.left + slideRect.width / 2;
+            var button = document.querySelector('.call-to-action .btn.slider-btn');
+            if (button) {
+                var buttonWidth = button.offsetWidth;
+                var newMarginLeft = slideCenter - windowWidth / 2;
+                var maxMargin = windowWidth / 2 - buttonWidth / 2 - 20;
+                if (newMarginLeft > maxMargin) newMarginLeft = maxMargin;
+                if (newMarginLeft < -maxMargin) newMarginLeft = -maxMargin;
+                button.style.marginLeft = newMarginLeft + 'px';
+            } else {
+                throw new Error('Botão slider-btn não encontrado');
+            }
+        } catch (error) {
+            logClientError('Erro ao alinhar botão com slide', error);
         }
     }
 
-    swiper.on('slideChangeTransitionStart', function () {
-        resetProgress();
-        triggerTransition();
-        setTimeout(startProgress, 50);
+    try {
+        swiper.on('slideChangeTransitionStart', function () {
+            resetProgress();
+            triggerTransition();
+            setTimeout(startProgress, 50);
+            alignButtonWithSlide();
+        });
+
+        swiper.on('autoplayStop', resetProgress);
+        swiper.on('autoplayStart', startProgress);
+
+        startProgress();
         alignButtonWithSlide();
-    });
-
-    swiper.on('autoplayStop', resetProgress);
-    swiper.on('autoplayStart', startProgress);
-
-    startProgress();
-    alignButtonWithSlide();
+    } catch (error) {
+        logClientError('Erro ao configurar eventos do Swiper', error);
+    }
 
     window.addEventListener('resize', function () {
         alignButtonWithSlide();
     });
 
     // Atualiza o ano no footer
-    document.getElementById("anoAtual").textContent = new Date().getFullYear();
+    try {
+        document.getElementById("anoAtual").textContent = new Date().getFullYear();
+    } catch (error) {
+        logClientError('Erro ao atualizar ano no footer', error);
+    }
 
     // Configuração do envio do formulário
     const form = document.querySelector('.atendimento-section form');
@@ -189,26 +237,27 @@ document.addEventListener('DOMContentLoaded', function () {
                         try {
                             toastr.success('Mensagem enviada com sucesso!', 'Sucesso');
                         } catch (toastrError) {
-                            console.error('Erro ao exibir toastr:', toastrError);
+                            logClientError('Erro ao exibir toastr de sucesso', toastrError);
                             alert('Mensagem enviada com sucesso!'); // Fallback
                         }
                     } else {
                         console.log('Mensagem enviada com sucesso! (toastr não disponível)');
+                        logClientError('toastr não disponível para mensagem de sucesso');
                         alert('Mensagem enviada com sucesso!'); // Fallback
                     }
                 }
             })
             .catch(error => {
-                console.error('Erro no envio:', error);
+                logClientError('Erro no envio do formulário', error);
                 if (typeof toastr !== 'undefined') {
                     try {
                         toastr.error('Erro ao enviar a mensagem: ' + error.message, 'Erro');
                     } catch (toastrError) {
-                        console.error('Erro ao exibir toastr:', toastrError);
+                        logClientError('Erro ao exibir toastr de erro', toastrError);
                         alert('Erro ao enviar a mensagem: ' + error.message); // Fallback
                     }
                 } else {
-                    console.error('Erro (toastr não disponível):', error);
+                    logClientError('Erro (toastr não disponível)', error);
                     alert('Erro ao enviar a mensagem: ' + error.message); // Fallback
                 }
             });
@@ -236,24 +285,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     productItems.forEach(item => {
         item.addEventListener('click', function () {
-            const productImg = this.querySelector('.product-image');
-            const productName = this.querySelector('.product-name').textContent.toLowerCase();
-            const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
+            try {
+                const productImg = this.querySelector('.product-image');
+                const productName = this.querySelector('.product-name').textContent.toLowerCase();
+                const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
 
-            if (productImg) {
-                modalImage.src = productImg.src;
-                modalImage.alt = productImg.alt;
-                modalTitle.textContent = productName.toUpperCase();
-                productSpecs.innerHTML = `
-                    <li><i class="fas fa-weight-hanging" style="color: #D32F2F;"></i> Peso: ${specs.peso}</li>
-                    <li><i class="fas fa-layer-group" style="color: #D32F2F;"></i> Peças / m²: ${Math.ceil(1 / ((specs.altura / 100) * (specs.largura / 100)))} Un.</li>
-                `;
-                productModal.show();
-                // Oculta o resultado e limpa os campos ao abrir o modal
-                resultContainer.style.display = 'none';
-                resultado.innerHTML = '';
-                alturaInput.value = '';
-                comprimentoInput.value = '';
+                if (productImg) {
+                    modalImage.src = productImg.src;
+                    modalImage.alt = productImg.alt;
+                    modalTitle.textContent = productName.toUpperCase();
+                    productSpecs.innerHTML = `
+                        <li><i class="fas fa-weight-hanging" style="color: #D32F2F;"></i> Peso: ${specs.peso}</li>
+                        <li><i class="fas fa-layer-group" style="color: #D32F2F;"></i> Peças / m²: ${Math.ceil(1 / ((specs.altura / 100) * (specs.largura / 100)))} Un.</li>
+                    `;
+                    productModal.show();
+                    // Oculta o resultado e limpa os campos ao abrir o modal
+                    resultContainer.style.display = 'none';
+                    resultado.innerHTML = '';
+                    alturaInput.value = '';
+                    comprimentoInput.value = '';
+                } else {
+                    throw new Error('Imagem do produto não encontrada');
+                }
+            } catch (error) {
+                logClientError(`Erro ao abrir modal do produto ${productName}`, error);
             }
         });
     });
@@ -266,38 +321,48 @@ document.addEventListener('DOMContentLoaded', function () {
     const newCalcularBtn = document.getElementById('calcularBtn');
 
     newCalcularBtn.addEventListener('click', function () {
-        const altura = parseFloat(alturaInput.value) || 0;
-        const comprimento = parseFloat(comprimentoInput.value) || 0;
-        const productName = modalTitle.textContent.toLowerCase();
-        const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
+        try {
+            const altura = parseFloat(alturaInput.value) || 0;
+            const comprimento = parseFloat(comprimentoInput.value) || 0;
+            const productName = modalTitle.textContent.toLowerCase();
+            const specs = productSpecsMap[productName] || { altura: 9, largura: 29, peso: '5kg / peça' };
 
-        if (altura > 0 && comprimento > 0) {
-            // Limpa o resultado antes de atualizar
-            resultado.innerHTML = '';
-            // Calcula a área da parede
-            const areaParede = altura * comprimento;
-            // Calcula a área do tijolo em metros quadrados
-            const areaTijolo = (specs.altura / 100) * (specs.largura / 100);
-            // Calcula o número de peças por m²
-            const pecasPorMetroQuadrado = Math.ceil(1 / areaTijolo);
-            // Calcula o total de peças
-            const totalPecas = Math.ceil(areaParede * pecasPorMetroQuadrado);
+            if (altura > 0 && comprimento > 0) {
+                // Limpa o resultado antes de atualizar
+                resultado.innerHTML = '';
+                // Calcula a área da parede
+                const areaParede = altura * comprimento;
+                // Calcula a área do tijolo em metros quadrados
+                const areaTijolo = (specs.altura / 100) * (specs.largura / 100);
+                // Calcula o número de peças por m²
+                const pecasPorMetroQuadrado = Math.ceil(1 / areaTijolo);
+                // Calcula o total de peças
+                const totalPecas = Math.ceil(areaParede * pecasPorMetroQuadrado);
 
-            // Atualiza o resultado
-            resultado.innerHTML = `<h5>Aproximadamente:</h5> <h3>${totalPecas} un.</h3>`;
-            resultContainer.style.display = 'block';
-            console.log(`Cálculo para ${productName}: altura=${altura}m, comprimento=${comprimento}m, área tijolo=${areaTijolo}m², peças/m²=${pecasPorMetroQuadrado}, total=${totalPecas} unidades`);
+                // Atualiza o resultado
+                resultado.innerHTML = `<h5>Aproximadamente:</h5> <h3>${totalPecas} un.</h3>`;
+                resultContainer.style.display = 'block';
+                console.log(`Cálculo para ${productName}: altura=${altura}m, comprimento=${comprimento}m, área tijolo=${areaTijolo}m², peças/m²=${pecasPorMetroQuadrado}, total=${totalPecas} unidades`);
 
-            // Limpa os campos após o cálculo
-            alturaInput.value = '';
-            comprimentoInput.value = '';
-        } else {
-            resultContainer.style.display = 'none';
-            resultado.innerHTML = '';
-            if (typeof toastr !== 'undefined') {
-                toastr.warning('Por favor, insira valores válidos para Altura e Comprimento.', 'Aviso');
+                // Limpa os campos após o cálculo
+                alturaInput.value = '';
+                comprimentoInput.value = '';
             } else {
-                alert('Por favor, insira valores válidos para Altura e Comprimento.');
+                resultContainer.style.display = 'none'; 
+                resultado.innerHTML = '';
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('Por favor, insira valores válidos para Altura e Comprimento.', 'Aviso');
+                } else {
+                    logClientError('toastr não disponível para aviso da calculadora');
+                    alert('Por favor, insira valores válidos para Altura e Comprimento.');
+                }
+            }
+        } catch (error) {
+            logClientError('Erro ao executar cálculo da calculadora', error);
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Erro ao calcular: ' + error.message, 'Erro');
+            } else {
+                alert('Erro ao calcular: ' + error.message);
             }
         }
     });

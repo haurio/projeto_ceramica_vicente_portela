@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionários</title>
+    <link rel="icon" type="image/png" href="image/ico.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="css/funcionarios.css">
+</head>
+<body>
+    <div class="home-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="image/logo.png" alt="Sistema de Gestão Cerâmica" class="logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/funcionarios.html" class="flex items-center"><i class="fas fa-users"></i><span>Funcionários</span></a></li>
+                    <li><a href="/pedidos.html" class="flex items-center"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a></li>
+                    <li><a href="/produtos.html" class="flex items-center"><i class="fas fa-box"></i><span>Produtos</span></a></li>
+                    <li><a href="/frota.html" class="flex items-center"><i class="fas fa-truck"></i><span>Frota</span></a></li>
+                    <li><a href="/relatorios.html" class="flex items-center"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a></li>
+                    <li><a href="/pagamentos.html" class="flex items-center"><i class="fas fa-credit-card"></i><span>Pagamentos</span></a></li>
+                    <li><a href="/agendamentos.html" class="flex items-center"><i class="fas fa-calendar-alt"></i><span>Agendamentos</span></a></li>
+                    <li><a href="/logout" class="flex items-center"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a></li>
+                </ul>
+            </nav>
+            <button id="toggle-sidebar" class="toggle-sidebar-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </aside>
+        <div class="main-content">
+            <main class="p-4">
+                <div class="employees-section bg-white p-4 rounded shadow">
+                    <h2 class="mb-4 fw-bold"><i class="fas fa-users me-2"></i> Gerenciamento de Funcionários</h2>
+                    <button id="add-employee-btn" class="add-btn btn btn-primary mb-4"><i class="fas fa-user-plus me-2"></i>Adicionar Funcionário</button>
+                    <div class="table-responsive">
+                        <table id="employees-table" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>Cargo</th>
+                                    <th>Email</th>
+                                    <th>Departamento</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="bg-dark text-white text-center py-2">
+                <div class="container">
+                    <p class="mb-0">© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>
+                    <span class="powered-by text-danger">Desenvolvido por Haurio Vieira</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <div class="modal fade" id="employee-modal" tabindex="-1" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-lg" style="max-width: 950px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title"><i class="fas fa-user-plus me-2"></i><strong>Adicionar Funcionário</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="employee-form">
+                        <input type="hidden" id="employee-id">
+                        <ul class="nav nav-tabs mb-4" id="employeeTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Dados Pessoais</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="address-tab" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab" aria-controls="address" aria-selected="false">Endereço</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab" aria-controls="professional" aria-selected="false">Dados Profissionais</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab" aria-controls="bank" aria-selected="false">Dados Bancários</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="dependents-tab" data-bs-toggle="tab" data-bs-target="#dependents" type="button" role="tab" aria-controls="dependents" aria-selected="false">Dependentes</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="employeeTabsContent">
+                            <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-12">
+                                        <label for="name" class="form-label">Nome Completo *</label>
+                                        <input type="text" class="form-control" id="name" required maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-4">
+                                        <label for="cpf" class="form-label">CPF *</label>
+                                        <input type="text" class="form-control" id="cpf" required placeholder="000.000.000-00">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="birth_date" class="form-label">Data de Nascimento *</label>
+                                        <input type="date" class="form-control" id="birth_date" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="birth_city" class="form-label">Local de Nascimento *</label>
+                                        <input type="text" class="form-control" id="birth_city" required maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-4">
+                                        <label for="birth_state" class="form-label">UF de Nascimento *</label>
+                                        <select id="birth_state" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="AC">AC</option>
+                                            <option value="AL">AL</option>
+                                            <option value="AP">AP</option>
+                                            <option value="AM">AM</option>
+                                            <option value="BA">BA</option>
+                                            <option value="CE">CE</option>
+                                            <option value="DF">DF</option>
+                                            <option value="ES">ES</option>
+                                            <option value="GO">GO</option>
+                                            <option value="MA">MA</option>
+                                            <option value="MT">MT</option>
+                                            <option value="MS">MS</option>
+                                            <option value="MG">MG</option>
+                                            <option value="PA">PA</option>
+                                            <option value="PB">PB</option>
+                                            <option value="PR">PR</option>
+                                            <option value="PE">PE</option>
+                                            <option value="PI">PI</option>
+                                            <option value="RJ">RJ</option>
+                                            <option value="RN">RN</option>
+                                            <option value="RS">RS</option>
+                                            <option value="RO">RO</option>
+                                            <option value="RR">RR</option>
+                                            <option value="SC">SC</option>
+                                            <option value="SP">SP</option>
+                                            <option value="SE">SE</option>
+                                            <option value="TO">TO</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="nationality" class="form-label">Nacionalidade *</label>
+                                        <input type="text" class="form-control" id="nationality" required maxlength="50">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="education_level" class="form-label">Grau de Instrução *</label>
+                                        <select id="education_level" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
+                                            <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
+                                            <option value="Ensino Médio Completo">Ensino Médio Completo</option>
+                                            <option value="Ensino Médio Incompleto">Ensino Médio Incompleto</option>
+                                            <option value="Ensino Superior Completo">Ensino Superior Completo</option>
+                                            <option value="Ensino Superior Incompleto">Ensino Superior Incompleto</option>
+                                            <option value="Pós-graduação Completo">Pós-graduação Completo</option>
+                                            <option value="Pós-graduação Incompleto">Pós-graduação Incompleto</option>
+                                            <option value="Técnico">Técnico</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-4">
+                                        <label for="phone" class="form-label">Telefone *</label>
+                                        <input type="text" class="form-control" id="phone" required placeholder="(00) 00000-0000">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="marital_status" class="form-label">Estado Civil *</label>
+                                        <select id="marital_status" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="Solteiro(a)">Solteiro(a)</option>
+                                            <option value="Casado(a)">Casado(a)</option>
+                                            <option value="Divorciado(a)">Divorciado(a)</option>
+                                            <option value="Viúvo(a)">Viúvo(a)</option>
+                                            <option value="União Estável">União Estável</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input type="email" class="form-control" id="email" required maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1 five-field-row">
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="voter_id" class="form-label">Título de Eleitor</label>
+                                        <input type="text" class="form-control" id="voter_id" maxlength="20">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="voter_zone" class="form-label">Zona</label>
+                                        <input type="text" class="form-control" id="voter_zone" maxlength="10">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="voter_section" class="form-label">Seção</label>
+                                        <input type="text" class="form-control" id="voter_section" maxlength="10">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="military_id" class="form-label">Carteira de Reservista</label>
+                                        <input type="text" class="form-control" id="military_id" maxlength="20">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="military_category" class="form-label">Categoria Reservista</label>
+                                        <input type="text" class="form-control" id="military_category" maxlength="20">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="identity_number" class="form-label">Identidade *</label>
+                                        <input type="text" class="form-control" id="identity_number" required maxlength="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="identity_issue_date" class="form-label">Data de Emissão *</label>
+                                        <input type="date" class="form-control" id="identity_issue_date" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="identity_issuer" class="form-label">Órgão Emissor *</label>
+                                        <input type="text" class="form-control" id="identity_issuer" required maxlength="10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="identity_state" class="form-label">UF *</label>
+                                        <select id="identity_state" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="AC">AC</option>
+                                            <option value="AL">AL</option>
+                                            <option value="AP">AP</option>
+                                            <option value="AM">AM</option>
+                                            <option value="BA">BA</option>
+                                            <option value="CE">CE</option>
+                                            <option value="DF">DF</option>
+                                            <option value="ES">ES</option>
+                                            <option value="GO">GO</option>
+                                            <option value="MA">MA</option>
+                                            <option value="MT">MT</option>
+                                            <option value="MS">MS</option>
+                                            <option value="MG">MG</option>
+                                            <option value="PA">PA</option>
+                                            <option value="PB">PB</option>
+                                            <option value="PR">PR</option>
+                                            <option value="PE">PE</option>
+                                            <option value="PI">PI</option>
+                                            <option value="RJ">RJ</option>
+                                            <option value="RN">RN</option>
+                                            <option value="RS">RS</option>
+                                            <option value="RO">RO</option>
+                                            <option value="RR">RR</option>
+                                            <option value="SC">SC</option>
+                                            <option value="SP">SP</option>
+                                            <option value="SE">SE</option>
+                                            <option value="TO">TO</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="father_name" class="form-label">Nome do Pai *</label>
+                                        <input type="text" class="form-control" id="father_name" required maxlength="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="mother_name" class="form-label">Nome da Mãe *</label>
+                                        <input type="text" class="form-control" id="mother_name" required maxlength="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="spouse" class="form-label">Cônjuge</label>
+                                        <input type="text" class="form-control" id="spouse" maxlength="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="has_children" class="form-label">Tem filhos? *</label>
+                                        <select id="has_children" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="sim">Sim</option>
+                                            <option value="nao">Não</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-4">
+                                        <label for="cep" class="form-label">CEP *</label>
+                                        <input type="text" class="form-control" id="cep" required placeholder="00000-000">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="city" class="form-label">Cidade *</label>
+                                        <input type="text" class="form-control" id="city" readonly required maxlength="100">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="state" class="form-label">Estado *</label>
+                                        <input type="text" class="form-control" id="state" readonly required maxlength="2">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="street" class="form-label">Rua *</label>
+                                        <input type="text" class="form-control" id="street" required maxlength="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="number" class="form-label">Número *</label>
+                                        <input type="text" class="form-control" id="number" required maxlength="10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="neighborhood" class="form-label">Bairro *</label>
+                                        <input type="text" class="form-control" id="neighborhood" required maxlength="50">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="complement" class="form-label">Complemento</label>
+                                        <input type="text" class="form-control" id="complement" maxlength="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="professional" role="tabpanel" aria-labelledby="professional-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="ctps" class="form-label">CTPS (Número/Série) *</label>
+                                        <input type="text" class="form-control" id="ctps" required maxlength="20" placeholder="0000000/0000">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="ctps_state" class="form-label">UF *</label>
+                                        <select id="ctps_state" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="AC">AC</option>
+                                            <option value="AL">AL</option>
+                                            <option value="AP">AP</option>
+                                            <option value="AM">AM</option>
+                                            <option value="BA">BA</option>
+                                            <option value="CE">CE</option>
+                                            <option value="DF">DF</option>
+                                            <option value="ES">ES</option>
+                                            <option value="GO">GO</option>
+                                            <option value="MA">MA</option>
+                                            <option value="MT">MT</option>
+                                            <option value="MS">MS</option>
+                                            <option value="MG">MG</option>
+                                            <option value="PA">PA</option>
+                                            <option value="PB">PB</option>
+                                            <option value="PR">PR</option>
+                                            <option value="PE">PE</option>
+                                            <option value="PI">PI</option>
+                                            <option value="RJ">RJ</option>
+                                            <option value="RN">RN</option>
+                                            <option value="RS">RS</option>
+                                            <option value="RO">RO</option>
+                                            <option value="RR">RR</option>
+                                            <option value="SC">SC</option>
+                                            <option value="SP">SP</option>
+                                            <option value="SE">SE</option>
+                                            <option value="TO">TO</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="ctps_issue_date" class="form-label">Data de Emissão *</label>
+                                        <input type="date" class="form-control" id="ctps_issue_date" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="pis" class="form-label">PIS/PASEP *</label>
+                                        <input type="text" class="form-control" id="pis" required placeholder="000.00000.00-0">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="admission_date" class="form-label">Data de Admissão *</label>
+                                        <input type="date" class="form-control" id="admission_date" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="salary" class="form-label">Salário (R$) *</label>
+                                        <input type="number" class="form-control" id="salary" required min="0" step="0.01">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="position" class="form-label">Função *</label>
+                                        <select id="position" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="department" class="form-label">Departamento *</label>
+                                        <select id="department" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="monthly_hours" class="form-label">Carga Horária Mensal *</label>
+                                        <input type="number" class="form-control" id="monthly_hours" required min="0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="weekly_hours" class="form-label">Carga Horária Semanal *</label>
+                                        <input type="number" class="form-control" id="weekly_hours" required min="0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="trial_period" class="form-label">Contrato de Experiência (dias) *</label>
+                                        <input type="number" class="form-control" id="trial_period" required min="0" max="90">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="night_shift_percentage" class="form-label">Adicional Noturno (%)</label>
+                                        <input type="number" class="form-control" id="night_shift_percentage" min="0" max="100" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="first_job" class="form-label">Primeiro Emprego</label>
+                                        <select id="first_job" class="form-select">
+                                            <option value="">Selecione</option>
+                                            <option value="sim">Sim</option>
+                                            <option value="nao">Não</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="status" class="form-label">Status *</label>
+                                        <select id="status" class="form-select" required>
+                                            <option value="Ativo">Ativo</option>
+                                            <option value="Afastado">Afastado</option>
+                                            <option value="Demitido">Demitido</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 d-none" id="leave-reason-group">
+                                        <label for="leave_reason" class="form-label">Motivo de Afastamento</label>
+                                        <input type="text" class="form-control" id="leave_reason" maxlength="100">
+                                    </div>
+                                    <div class="col-md-3 d-none" id="dismissal-date-group">
+                                        <label for="dismissal_date" class="form-label">Data de Demissão</label>
+                                        <input type="date" class="form-control" id="dismissal_date">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-12">
+                                        <label class="form-label">Dias de Folga *</label>
+                                        <div class="d-flex flex-wrap days-off-container">
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_domingo">
+                                                <label class="form-check-label" for="day_off_domingo">Domingo</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_segunda">
+                                                <label class="form-check-label" for="day_off_segunda">Segunda</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_terca">
+                                                <label class="form-check-label" for="day_off_terca">Terça</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_quarta">
+                                                <label class="form-check-label" for="day_off_quarta">Quarta</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_quinta">
+                                                <label class="form-check-label" for="day_off_quinta">Quinta</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_sexta">
+                                                <label class="form-check-label" for="day_off_sexta">Sexta</label>
+                                            </div>
+                                            <div class="form-check me-3">
+                                                <input type="checkbox" class="form-check-input" id="day_off_sabado">
+                                                <label class="form-check-label" for="day_off_sabado">Sábado</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-12">
+                                        <label class="form-label">Horário de Trabalho *</label>
+                                        <div class="row g-1">
+                                            <div class="col-md-4">
+                                                <label for="weekday_start" class="form-label">Segunda a Sexta - Entrada</label>
+                                                <input type="time" class="form-control" id="weekday_start" required>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="weekday_end" class="form-label">Segunda a Sexta - Saída</label>
+                                                <input type="time" class="form-control" id="weekday_end" required>
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mt-2">
+                                            <div class="col-md-4">
+                                                <label for="saturday_start" class="form-label">Sábado - Entrada</label>
+                                                <input type="time" class="form-control" id="saturday_start">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="saturday_end" class="form-label">Sábado - Saída</label>
+                                                <input type="time" class="form-control" id="saturday_end">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1 mt-2">
+                                            <div class="col-md-4">
+                                                <label for="sunday_start" class="form-label">Domingo - Entrada</label>
+                                                <input type="time" class="form-control" id="sunday_start">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="sunday_end" class="form-label">Domingo - Saída</label>
+                                                <input type="time" class="form-control" id="sunday_end">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="bank" role="tabpanel" aria-labelledby="bank-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="payment_method" class="form-label">Forma de Pagamento *</label>
+                                        <select id="payment_method" class="form-select" required>
+                                            <option value="">Selecione</option>
+                                            <option value="PIX">PIX</option>
+                                            <option value="Transferência">Transferência</option>
+                                            <option value="Dinheiro">Dinheiro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-9 d-none" id="pix-group">
+                                        <div class="row g-1">
+                                            <div class="col-md-6">
+                                                <label for="pix_bank" class="form-label">Banco *</label>
+                                                <select id="pix_bank" class="form-select">
+                                                    <option value="">Selecione</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="pix_key" class="form-label">Chave PIX *</label>
+                                                <input type="text" class="form-control" id="pix_key" maxlength="50">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1 d-none" id="transfer-group">
+                                    <div class="col-md-3">
+                                        <label for="transfer_bank" class="form-label">Banco *</label>
+                                        <select id="transfer_bank" class="form-select">
+                                            <option value="">Selecione</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="agency" class="form-label">Agência *</label>
+                                        <input type="text" class="form-control" id="agency" maxlength="10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="account" class="form-label">Conta *</label>
+                                        <input type="text" class="form-control" id="account" maxlength="20">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="account_type" class="form-label">Tipo de Conta *</label>
+                                        <select id="account_type" class="form-select">
+                                            <option value="">Selecione</option>
+                                            <option value="Corrente">Corrente</option>
+                                            <option value="Poupança">Poupança</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="dependents" role="tabpanel" aria-labelledby="dependents-tab">
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-primary add-dependent-btn"><i class="fas fa-plus me-2"></i>Adicionar Dependente</button>
+                                </div>
+                                <div id="dependents-list"></div>
+                            </div>
+                        </div>
+                        <div id="dependent-template" style="display: none;">
+                            <div class="dependent-item mb-3" data-dependent-id="">
+                                <div class="row g-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nome do Dependente *</label>
+                                        <input type="text" class="form-control dependent-name" maxlength="100" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Data de Nascimento *</label>
+                                        <input type="date" class="form-control dependent-birth-date" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Parentesco *</label>
+                                        <select class="form-select dependent-relationship" required>
+                                            <option value="">Selecione</option>
+                                            <option value="Filho(a)">Filho(a)</option>
+                                            <option value="Cônjuge">Cônjuge</option>
+                                            <option value="Pai/Mãe">Pai/Mãe</option>
+                                            <option value="Irmão(ã)">Irmão(ã)</option>
+                                            <option value="Outro">Outro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-danger remove-dependent-btn"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary cancel-btn" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary save-btn">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/funcionarios.js"></script>
+</body>
+</html>

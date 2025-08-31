@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Principal</title>
+    <link rel="icon" type="image/png" href="image/ico.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- CDN para FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <!-- CDN para Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <div class="home-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="image/logo.png" alt="Sistema de Gestão Cerâmica" class="logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/funcionarios.html"><i class="fas fa-users"></i><span>Funcionários</span></a></li>
+                    <li><a href="/pedidos.html"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a></li>
+                    <li><a href="/produtos.html"><i class="fas fa-box"></i><span>Produtos</span></a></li>
+                    <li><a href="/frota.html"><i class="fas fa-truck"></i><span>Frota</span></a></li>
+                    <li><a href="/relatorios.html"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a></li>
+                    <li><a href="/pagamentos.html"><i class="fas fa-credit-card"></i><span>Pagamentos</span></a></li>
+                    <li><a href="/agendamentos.html"><i class="fas fa-calendar-alt"></i><span>Agendamentos</span></a></li>
+                    <li><a href="/logout"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a></li>
+                </ul>
+            </nav>
+            <button id="toggle-sidebar" class="toggle-sidebar-btn" aria-label="Alternar menu lateral">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </aside>
+        <div class="main-content">
+            <main>
+                <div class="dashboard-grid">
+                    <div class="calendar-card">
+                        <h2>Agendas de Entregas</h2>
+                        <div id="calendar"></div>
+                    </div>
+                    <div class="orders-card">
+                        <h2>Pedidos do Dia</h2>
+                        <ul id="orders-list"></ul>
+                    </div>
+                    <div class="payments-card">
+                        <h2>Pagamentos Pendentes</h2>
+                        <ul id="payments-list"></ul>
+                    </div>
+                    <div class="vacations-card">
+                        <h2>Férias Atrasadas</h2>
+                        <ul id="vacations-list"></ul>
+                    </div>
+                    <div class="sales-card">
+                        <h2>Vendas por Mês (2025)</h2>
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                </div>
+            </main>
+            <footer>
+                <div class="container">
+                    <p>© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>
+                    <span class="powered-by">Desenvolvido por Haurio Vieira</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Contêiner para toasts -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

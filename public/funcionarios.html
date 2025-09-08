@@ -72,7 +72,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="employee-form">
-                        <input type="hidden" id="employee-id">
+                        <input type="hidden" id="employee-id" name="employee_id">
                         <ul class="nav nav-tabs mb-4" id="employeeTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Dados Pessoais</button>
@@ -95,27 +95,27 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-12">
                                         <label for="name" class="form-label">Nome Completo *</label>
-                                        <input type="text" class="form-control" id="name" required maxlength="100">
+                                        <input type="text" class="form-control" id="name" name="name" required maxlength="100">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-4">
                                         <label for="cpf" class="form-label">CPF *</label>
-                                        <input type="text" class="form-control" id="cpf" required placeholder="000.000.000-00">
+                                        <input type="text" class="form-control" id="cpf" name="cpf" required placeholder="000.000.000-00">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="birth_date" class="form-label">Data de Nascimento *</label>
-                                        <input type="date" class="form-control" id="birth_date" required>
+                                        <input type="date" class="form-control" id="birth_date" name="birth_date" required>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="birth_city" class="form-label">Local de Nascimento *</label>
-                                        <input type="text" class="form-control" id="birth_city" required maxlength="100">
+                                        <input type="text" class="form-control" id="birth_city" name="birth_city" required maxlength="100">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-4">
                                         <label for="birth_state" class="form-label">UF de Nascimento *</label>
-                                        <select id="birth_state" class="form-select" required>
+                                        <select id="birth_state" name="birth_state" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="AC">AC</option>
                                             <option value="AL">AL</option>
@@ -148,11 +148,11 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label for="nationality" class="form-label">Nacionalidade *</label>
-                                        <input type="text" class="form-control" id="nationality" required maxlength="50">
+                                        <input type="text" class="form-control" id="nationality" name="nationality" required maxlength="50">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="education_level" class="form-label">Grau de Instrução *</label>
-                                        <select id="education_level" class="form-select" required>
+                                        <select id="education_level" name="education_level" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="Ensino Fundamental Completo">Ensino Fundamental Completo</option>
                                             <option value="Ensino Fundamental Incompleto">Ensino Fundamental Incompleto</option>
@@ -169,11 +169,11 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-4">
                                         <label for="phone" class="form-label">Telefone *</label>
-                                        <input type="text" class="form-control" id="phone" required placeholder="(00) 00000-0000">
+                                        <input type="text" class="form-control" id="phone" name="phone" required placeholder="(00) 00000-0000">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="marital_status" class="form-label">Estado Civil *</label>
-                                        <select id="marital_status" class="form-select" required>
+                                        <select id="marital_status" name="marital_status" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="Solteiro(a)">Solteiro(a)</option>
                                             <option value="Casado(a)">Casado(a)</option>
@@ -184,47 +184,47 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label for="email" class="form-label">Email *</label>
-                                        <input type="email" class="form-control" id="email" required maxlength="100">
+                                        <input type="email" class="form-control" id="email" name="email" required maxlength="100">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1 five-field-row">
                                     <div class="col-md-3 col-lg-2">
                                         <label for="voter_id" class="form-label">Título de Eleitor</label>
-                                        <input type="text" class="form-control" id="voter_id" maxlength="20">
+                                        <input type="text" class="form-control" id="voter_id" name="voter_id" maxlength="20">
                                     </div>
                                     <div class="col-md-3 col-lg-2">
                                         <label for="voter_zone" class="form-label">Zona</label>
-                                        <input type="text" class="form-control" id="voter_zone" maxlength="10">
+                                        <input type="text" class="form-control" id="voter_zone" name="voter_zone" maxlength="10">
                                     </div>
                                     <div class="col-md-3 col-lg-2">
                                         <label for="voter_section" class="form-label">Seção</label>
-                                        <input type="text" class="form-control" id="voter_section" maxlength="10">
+                                        <input type="text" class="form-control" id="voter_section" name="voter_section" maxlength="10">
                                     </div>
                                     <div class="col-md-3 col-lg-2">
                                         <label for="military_id" class="form-label">Carteira de Reservista</label>
-                                        <input type="text" class="form-control" id="military_id" maxlength="20">
+                                        <input type="text" class="form-control" id="military_id" name="military_id" maxlength="20">
                                     </div>
                                     <div class="col-md-3 col-lg-2">
                                         <label for="military_category" class="form-label">Categoria Reservista</label>
-                                        <input type="text" class="form-control" id="military_category" maxlength="20">
+                                        <input type="text" class="form-control" id="military_category" name="military_category" maxlength="20">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="identity_number" class="form-label">Identidade *</label>
-                                        <input type="text" class="form-control" id="identity_number" required maxlength="20">
+                                        <input type="text" class="form-control" id="identity_number" name="identity_number" required maxlength="20">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="identity_issue_date" class="form-label">Data de Emissão *</label>
-                                        <input type="date" class="form-control" id="identity_issue_date" required>
+                                        <input type="date" class="form-control" id="identity_issue_date" name="identity_issue_date" required>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="identity_issuer" class="form-label">Órgão Emissor *</label>
-                                        <input type="text" class="form-control" id="identity_issuer" required maxlength="10">
+                                        <input type="text" class="form-control" id="identity_issuer" name="identity_issuer" required maxlength="10">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="identity_state" class="form-label">UF *</label>
-                                        <select id="identity_state" class="form-select" required>
+                                        <select id="identity_state" name="identity_state" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="AC">AC</option>
                                             <option value="AL">AL</option>
@@ -259,19 +259,19 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="father_name" class="form-label">Nome do Pai *</label>
-                                        <input type="text" class="form-control" id="father_name" required maxlength="100">
+                                        <input type="text" class="form-control" id="father_name" name="father_name" required maxlength="100">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="mother_name" class="form-label">Nome da Mãe *</label>
-                                        <input type="text" class="form-control" id="mother_name" required maxlength="100">
+                                        <input type="text" class="form-control" id="mother_name" name="mother_name" required maxlength="100">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="spouse" class="form-label">Cônjuge</label>
-                                        <input type="text" class="form-control" id="spouse" maxlength="100">
+                                        <input type="text" class="form-control" id="spouse" name="spouse" maxlength="100">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="has_children" class="form-label">Tem filhos? *</label>
-                                        <select id="has_children" class="form-select" required>
+                                        <select id="has_children" name="has_children" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="sim">Sim</option>
                                             <option value="nao">Não</option>
@@ -283,33 +283,33 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-4">
                                         <label for="cep" class="form-label">CEP *</label>
-                                        <input type="text" class="form-control" id="cep" required placeholder="00000-000">
+                                        <input type="text" class="form-control" id="cep" name="cep" required placeholder="00000-000">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="city" class="form-label">Cidade *</label>
-                                        <input type="text" class="form-control" id="city" readonly required maxlength="100">
+                                        <input type="text" class="form-control" id="city" name="city" readonly required maxlength="100">
                                     </div>
                                     <div class="col-md-4">
                                         <label for="state" class="form-label">Estado *</label>
-                                        <input type="text" class="form-control" id="state" readonly required maxlength="2">
+                                        <input type="text" class="form-control" id="state" name="state" readonly required maxlength="2">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="street" class="form-label">Rua *</label>
-                                        <input type="text" class="form-control" id="street" required maxlength="100">
+                                        <input type="text" class="form-control" id="street" name="street" required maxlength="100">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="number" class="form-label">Número *</label>
-                                        <input type="text" class="form-control" id="number" required maxlength="10">
+                                        <input type="text" class="form-control" id="number" name="number" required maxlength="10">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="neighborhood" class="form-label">Bairro *</label>
-                                        <input type="text" class="form-control" id="neighborhood" required maxlength="50">
+                                        <input type="text" class="form-control" id="neighborhood" name="neighborhood" required maxlength="50">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="complement" class="form-label">Complemento</label>
-                                        <input type="text" class="form-control" id="complement" maxlength="100">
+                                        <input type="text" class="form-control" id="complement" name="complement" maxlength="100">
                                     </div>
                                 </div>
                             </div>
@@ -317,11 +317,11 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="ctps" class="form-label">CTPS (Número/Série) *</label>
-                                        <input type="text" class="form-control" id="ctps" required maxlength="20" placeholder="0000000/0000">
+                                        <input type="text" class="form-control" id="ctps" name="ctps" required maxlength="20" placeholder="0000000/0000">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="ctps_state" class="form-label">UF *</label>
-                                        <select id="ctps_state" class="form-select" required>
+                                        <select id="ctps_state" name="ctps_state" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="AC">AC</option>
                                             <option value="AL">AL</option>
@@ -354,31 +354,31 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label for="ctps_issue_date" class="form-label">Data de Emissão *</label>
-                                        <input type="date" class="form-control" id="ctps_issue_date" required>
+                                        <input type="date" class="form-control" id="ctps_issue_date" name="ctps_issue_date" required>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="pis" class="form-label">PIS/PASEP *</label>
-                                        <input type="text" class="form-control" id="pis" required placeholder="000.00000.00-0">
+                                        <input type="text" class="form-control" id="pis" name="pis" required placeholder="000.00000.00-0">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="admission_date" class="form-label">Data de Admissão *</label>
-                                        <input type="date" class="form-control" id="admission_date" required>
+                                        <input type="date" class="form-control" id="admission_date" name="admission_date" required>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="salary" class="form-label">Salário (R$) *</label>
-                                        <input type="number" class="form-control" id="salary" required min="0" step="0.01">
+                                        <input type="number" class="form-control" id="salary" name="salary" required min="0" step="0.01">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="position" class="form-label">Função *</label>
-                                        <select id="position" class="form-select" required>
+                                        <select id="position" name="cargo_id" class="form-select" required>
                                             <option value="">Selecione</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="department" class="form-label">Departamento *</label>
-                                        <select id="department" class="form-select" required>
+                                        <select id="department" name="departamento_id" class="form-select" required>
                                             <option value="">Selecione</option>
                                         </select>
                                     </div>
@@ -386,25 +386,25 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="monthly_hours" class="form-label">Carga Horária Mensal *</label>
-                                        <input type="number" class="form-control" id="monthly_hours" required min="0">
+                                        <input type="number" class="form-control" id="monthly_hours" name="monthly_hours" required min="0">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="weekly_hours" class="form-label">Carga Horária Semanal *</label>
-                                        <input type="number" class="form-control" id="weekly_hours" required min="0">
+                                        <input type="number" class="form-control" id="weekly_hours" name="weekly_hours" required min="0">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="trial_period" class="form-label">Contrato de Experiência (dias) *</label>
-                                        <input type="number" class="form-control" id="trial_period" required min="0" max="90">
+                                        <input type="number" class="form-control" id="trial_period" name="trial_period" required min="0" max="90">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="night_shift_percentage" class="form-label">Adicional Noturno (%)</label>
-                                        <input type="number" class="form-control" id="night_shift_percentage" min="0" max="100" step="0.1">
+                                        <input type="number" class="form-control" id="night_shift_percentage" name="night_shift_percentage" min="0" max="100" step="0.1">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="first_job" class="form-label">Primeiro Emprego</label>
-                                        <select id="first_job" class="form-select">
+                                        <select id="first_job" name="first_job" class="form-select">
                                             <option value="">Selecione</option>
                                             <option value="sim">Sim</option>
                                             <option value="nao">Não</option>
@@ -412,7 +412,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label for="status" class="form-label">Status *</label>
-                                        <select id="status" class="form-select" required>
+                                        <select id="status" name="status" class="form-select" required>
                                             <option value="Ativo">Ativo</option>
                                             <option value="Afastado">Afastado</option>
                                             <option value="Demitido">Demitido</option>
@@ -420,11 +420,11 @@
                                     </div>
                                     <div class="col-md-3 d-none" id="leave-reason-group">
                                         <label for="leave_reason" class="form-label">Motivo de Afastamento</label>
-                                        <input type="text" class="form-control" id="leave_reason" maxlength="100">
+                                        <input type="text" class="form-control" id="leave_reason" name="leave_reason" maxlength="100">
                                     </div>
                                     <div class="col-md-3 d-none" id="dismissal-date-group">
                                         <label for="dismissal_date" class="form-label">Data de Demissão</label>
-                                        <input type="date" class="form-control" id="dismissal_date">
+                                        <input type="date" class="form-control" id="dismissal_date" name="dismissal_date">
                                     </div>
                                 </div>
                                 <div class="row mb-3 g-1">
@@ -432,31 +432,31 @@
                                         <label class="form-label">Dias de Folga *</label>
                                         <div class="d-flex flex-wrap days-off-container">
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_domingo">
+                                                <input type="checkbox" class="form-check-input" id="day_off_domingo" name="days_off[]" value="domingo">
                                                 <label class="form-check-label" for="day_off_domingo">Domingo</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_segunda">
-                                                <label class="form-check-label" for="day_off_segunda">Segunda</label>
+                                                <input type="checkbox" class="form-check-input" id="day_off_segunda" name="days_off[]" value="segunda">
+                                                <label class="form-check-label" for="day_off_segunda">Segunda-Feira</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_terca">
-                                                <label class="form-check-label" for="day_off_terca">Terça</label>
+                                                <input type="checkbox" class="form-check-input" id="day_off_terca" name="days_off[]" value="terca">
+                                                <label class="form-check-label" for="day_off_terca">Terça-Feira</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_quarta">
-                                                <label class="form-check-label" for="day_off_quarta">Quarta</label>
+                                                <input type="checkbox" class="form-check-input" id="day_off_quarta" name="days_off[]" value="quarta">
+                                                <label class="form-check-label" for="day_off_quarta">Quarta-Feira</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_quinta">
-                                                <label class="form-check-label" for="day_off_quinta">Quinta</label>
+                                                <input type="checkbox" class="form-check-input" id="day_off_quinta" name="days_off[]" value="quinta">
+                                                <label class="form-check-label" for="day_off_quinta">Quinta-Feira</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_sexta">
-                                                <label class="form-check-label" for="day_off_sexta">Sexta</label>
+                                                <input type="checkbox" class="form-check-input" id="day_off_sexta" name="days_off[]" value="sexta">
+                                                <label class="form-check-label" for="day_off_sexta">Sexta-Feira</label>
                                             </div>
                                             <div class="form-check me-3">
-                                                <input type="checkbox" class="form-check-input" id="day_off_sabado">
+                                                <input type="checkbox" class="form-check-input" id="day_off_sabado" name="days_off[]" value="sabado">
                                                 <label class="form-check-label" for="day_off_sabado">Sábado</label>
                                             </div>
                                         </div>
@@ -468,31 +468,31 @@
                                         <div class="row g-1">
                                             <div class="col-md-4">
                                                 <label for="weekday_start" class="form-label">Segunda a Sexta - Entrada</label>
-                                                <input type="time" class="form-control" id="weekday_start" required>
+                                                <input type="time" class="form-control" id="weekday_start" name="weekday_start" required>
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="weekday_end" class="form-label">Segunda a Sexta - Saída</label>
-                                                <input type="time" class="form-control" id="weekday_end" required>
+                                                <input type="time" class="form-control" id="weekday_end" name="weekday_end" required>
                                             </div>
                                         </div>
                                         <div class="row g-1 mt-2">
                                             <div class="col-md-4">
                                                 <label for="saturday_start" class="form-label">Sábado - Entrada</label>
-                                                <input type="time" class="form-control" id="saturday_start">
+                                                <input type="time" class="form-control" id="saturday_start" name="saturday_start">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="saturday_end" class="form-label">Sábado - Saída</label>
-                                                <input type="time" class="form-control" id="saturday_end">
+                                                <input type="time" class="form-control" id="saturday_end" name="saturday_end">
                                             </div>
                                         </div>
                                         <div class="row g-1 mt-2">
                                             <div class="col-md-4">
                                                 <label for="sunday_start" class="form-label">Domingo - Entrada</label>
-                                                <input type="time" class="form-control" id="sunday_start">
+                                                <input type="time" class="form-control" id="sunday_start" name="sunday_start">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="sunday_end" class="form-label">Domingo - Saída</label>
-                                                <input type="time" class="form-control" id="sunday_end">
+                                                <input type="time" class="form-control" id="sunday_end" name="sunday_end">
                                             </div>
                                         </div>
                                     </div>
@@ -502,7 +502,7 @@
                                 <div class="row mb-3 g-1">
                                     <div class="col-md-3">
                                         <label for="payment_method" class="form-label">Forma de Pagamento *</label>
-                                        <select id="payment_method" class="form-select" required>
+                                        <select id="payment_method" name="payment_method" class="form-select" required>
                                             <option value="">Selecione</option>
                                             <option value="PIX">PIX</option>
                                             <option value="Transferência">Transferência</option>
@@ -513,13 +513,13 @@
                                         <div class="row g-1">
                                             <div class="col-md-6">
                                                 <label for="pix_bank" class="form-label">Banco *</label>
-                                                <select id="pix_bank" class="form-select">
+                                                <select id="pix_bank" name="bank" class="form-select">
                                                     <option value="">Selecione</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="pix_key" class="form-label">Chave PIX *</label>
-                                                <input type="text" class="form-control" id="pix_key" maxlength="50">
+                                                <input type="text" class="form-control" id="pix_key" name="pix_key" maxlength="50">
                                             </div>
                                         </div>
                                     </div>
@@ -527,21 +527,21 @@
                                 <div class="row mb-3 g-1 d-none" id="transfer-group">
                                     <div class="col-md-3">
                                         <label for="transfer_bank" class="form-label">Banco *</label>
-                                        <select id="transfer_bank" class="form-select">
+                                        <select id="transfer_bank" name="bank" class="form-select">
                                             <option value="">Selecione</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="agency" class="form-label">Agência *</label>
-                                        <input type="text" class="form-control" id="agency" maxlength="10">
+                                        <input type="text" class="form-control" id="agency" name="agency" maxlength="10">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="account" class="form-label">Conta *</label>
-                                        <input type="text" class="form-control" id="account" maxlength="20">
+                                        <input type="text" class="form-control" id="account" name="account" maxlength="20">
                                     </div>
                                     <div class="col-md-3">
                                         <label for="account_type" class="form-label">Tipo de Conta *</label>
-                                        <select id="account_type" class="form-select">
+                                        <select id="account_type" name="account_type" class="form-select">
                                             <option value="">Selecione</option>
                                             <option value="Corrente">Corrente</option>
                                             <option value="Poupança">Poupança</option>
@@ -561,15 +561,15 @@
                                 <div class="row g-1">
                                     <div class="col-md-4">
                                         <label class="form-label">Nome do Dependente *</label>
-                                        <input type="text" class="form-control dependent-name" maxlength="100" required>
+                                        <input type="text" class="form-control dependent-name" name="dependents[].name" maxlength="100" required>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Data de Nascimento *</label>
-                                        <input type="date" class="form-control dependent-birth-date" required>
+                                        <input type="date" class="form-control dependent-birth-date" name="dependents[].birth_date" required>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Parentesco *</label>
-                                        <select class="form-select dependent-relationship" required>
+                                        <select class="form-select dependent-relationship" name="dependents[].parentesco" required>
                                             <option value="">Selecione</option>
                                             <option value="Filho(a)">Filho(a)</option>
                                             <option value="Cônjuge">Cônjuge</option>

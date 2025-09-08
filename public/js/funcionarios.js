@@ -20,6 +20,58 @@ $(document).ready(function () {
         return;
     }
 
+    // Aplicar novalidate ao formulário
+    $('#employee-form').attr('novalidate', 'novalidate');
+
+    // Mapeamento de nomes de campos para mensagens amigáveis
+    const fieldNames = {
+        name: 'Nome',
+        cpf: 'CPF',
+        birth_date: 'Data de Nascimento',
+        birth_city: 'Cidade de Nascimento',
+        birth_state: 'Estado de Nascimento',
+        nationality: 'Nacionalidade',
+        education_level: 'Nível de Escolaridade',
+        phone: 'Telefone',
+        marital_status: 'Estado Civil',
+        email: 'E-mail',
+        identity_number: 'Número da Identidade',
+        identity_issue_date: 'Data de Emissão da Identidade',
+        identity_issuer: 'Emissor da Identidade',
+        identity_state: 'Estado da Identidade',
+        father_name: 'Nome do Pai',
+        mother_name: 'Nome da Mãe',
+        has_children: 'Possui Filhos',
+        cep: 'CEP',
+        city: 'Cidade',
+        state: 'Estado',
+        street: 'Rua',
+        number: 'Número',
+        neighborhood: 'Bairro',
+        ctps: 'CTPS',
+        ctps_state: 'Estado da CTPS',
+        ctps_issue_date: 'Data de Emissão da CTPS',
+        pis: 'PIS',
+        admission_date: 'Data de Admissão',
+        salary: 'Salário',
+        cargo_id: 'Cargo',
+        departamento_id: 'Departamento',
+        monthly_hours: 'Horas Mensais',
+        weekly_hours: 'Horas Semanais',
+        trial_period: 'Período de Experiência',
+        status: 'Status',
+        payment_method: 'Forma de Pagamento',
+        weekday_start: 'Início da Jornada (Dias Úteis)',
+        weekday_end: 'Fim da Jornada (Dias Úteis)',
+        pix_key: 'Chave PIX',
+        bank: 'Banco',
+        agency: 'Agência',
+        account: 'Conta',
+        account_type: 'Tipo de Conta',
+        leave_reason: 'Motivo de Afastamento',
+        dismissal_date: 'Data de Demissão'
+    };
+
     // Função para enviar logs ao servidor
     async function logToServer(level, msg, metadata = {}) {
         try {
@@ -110,6 +162,7 @@ $(document).ready(function () {
     } catch (error) {
         console.error('Erro ao aplicar máscaras:', error);
         toastr.error('Erro ao aplicar máscaras de entrada. Verifique o plugin jQuery Mask.');
+        logToServer('error', 'Erro ao aplicar máscaras', { error: error.message });
     }
 
     // Função para formatar datas ISO para YYYY-MM-DD
@@ -166,7 +219,6 @@ $(document).ready(function () {
                         toastr.warning('Nenhum banco disponível.');
                     }
 
-                    // Logar opções disponíveis nos selects de banco
                     const pixBankOptions = $pixBankSelect.find('option').map(function() { return $(this).val(); }).get();
                     const transferBankOptions = $transferBankSelect.find('option').map(function() { return $(this).val(); }).get();
                     console.log('Opções disponíveis em #pix_bank:', pixBankOptions);
@@ -247,7 +299,7 @@ $(document).ready(function () {
         $('#dependents-list').empty();
         $('#pix-group, #transfer-group').addClass('d-none');
         $('.days-off-container input[type="checkbox"]').prop('checked', false);
-        $('.form-control').removeClass('is-invalid');
+        $('.form-control, .form-select').removeClass('is-invalid');
         $('.days-off-container').removeClass('is-invalid');
         $('.dependent-item').removeClass('is-invalid');
         logToServer('info', 'Formulário limpo');
@@ -285,9 +337,19 @@ $(document).ready(function () {
         return re.test(email);
     }
 
+    // Função para encontrar a aba de um campo
+    function findTabForField(fieldName) {
+        let $field = $(`[name="${fieldName}"]`);
+        if ($field.length) {
+            return $field.closest('.tab-pane').attr('id') || 'personal';
+        }
+        return 'personal'; // Aba padrão
+    }
+
     // Função para validar o formulário
     function validateForm(data) {
         console.log('Validando formulário:', data);
+        let isValid = true;
         const requiredFields = [
             'name', 'cpf', 'birth_date', 'birth_city', 'birth_state', 'nationality',
             'education_level', 'phone', 'marital_status', 'email', 'identity_number',
@@ -298,75 +360,153 @@ $(document).ready(function () {
             'trial_period', 'status', 'payment_method', 'weekday_start', 'weekday_end'
         ];
 
+        let firstInvalidTab = null;
+
+        // Validar campos obrigatórios
         for (let field of requiredFields) {
-            if (!data[field]) {
+            if (!data[field] || data[field] === '') {
                 console.log(`Campo obrigatório ausente: ${field}`);
-                toastr.error(`O campo ${field} é obrigatório.`);
-                $(`#${field}`).addClass('is-invalid');
-                return false;
+                toastr.error(`O campo ${fieldNames[field] || field.replace('_', ' ')} é obrigatório.`);
+                $(`[name="${field}"]`).addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField(field);
+                }
+                isValid = false;
             }
         }
 
-        if (!validateCPF(data.cpf)) {
+        // Validar CPF
+        if (data.cpf && !validateCPF(data.cpf)) {
             console.log('CPF inválido:', data.cpf);
             toastr.error('CPF inválido.');
             $('#cpf').addClass('is-invalid');
-            return false;
+            if (!firstInvalidTab) {
+                firstInvalidTab = findTabForField('cpf');
+            }
+            isValid = false;
         }
 
-        if (!validateEmail(data.email)) {
+        // Validar e-mail
+        if (data.email && !validateEmail(data.email)) {
             console.log('E-mail inválido:', data.email);
             toastr.error('E-mail inválido.');
             $('#email').addClass('is-invalid');
-            return false;
+            if (!firstInvalidTab) {
+                firstInvalidTab = findTabForField('email');
+            }
+            isValid = false;
         }
 
-        if (data.payment_method === 'PIX' && (!data.pix_key || !data.bank)) {
-            console.log('Validação PIX falhou:', { pix_key: data.pix_key, bank: data.bank });
-            toastr.error('Chave PIX e banco são obrigatórios para a forma de pagamento PIX.');
-            $('#pix_key, #pix_bank').addClass('is-invalid');
-            return false;
+        // Validar campos bancários para PIX
+        if (data.payment_method === 'PIX') {
+            if (!data.pix_key) {
+                console.log('Chave PIX ausente');
+                toastr.error('O campo Chave PIX é obrigatório.');
+                $('#pix_key').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('pix_key');
+                }
+                isValid = false;
+            }
+            if (!data.bank) {
+                console.log('Banco ausente para PIX');
+                toastr.error('O campo Banco é obrigatório para PIX.');
+                $('#pix_bank').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('bank');
+                }
+                isValid = false;
+            }
         }
 
-        if (data.payment_method === 'Transferência' && (!data.bank || !data.agency || !data.account || !data.account_type)) {
-            console.log('Validação Transferência falhou:', { bank: data.bank, agency: data.agency, account: data.account, account_type: data.account_type });
-            toastr.error('Banco, agência, conta e tipo de conta são obrigatórios para a forma de pagamento Transferência.');
-            $('#transfer_bank, #agency, #account, #account_type').addClass('is-invalid');
-            return false;
+        // Validar campos bancários para Transferência
+        if (data.payment_method === 'Transferência') {
+            if (!data.bank) {
+                console.log('Banco ausente para Transferência');
+                toastr.error('O campo Banco é obrigatório para Transferência.');
+                $('#transfer_bank').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('bank');
+                }
+                isValid = false;
+            }
+            if (!data.agency) {
+                console.log('Agência ausente');
+                toastr.error('O campo Agência é obrigatório.');
+                $('#agency').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('agency');
+                }
+                isValid = false;
+            }
+            if (!data.account) {
+                console.log('Conta ausente');
+                toastr.error('O campo Conta é obrigatório.');
+                $('#account').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('account');
+                }
+                isValid = false;
+            }
+            if (!data.account_type) {
+                console.log('Tipo de conta ausente');
+                toastr.error('O campo Tipo de Conta é obrigatório.');
+                $('#account_type').addClass('is-invalid');
+                if (!firstInvalidTab) {
+                    firstInvalidTab = findTabForField('account_type');
+                }
+                isValid = false;
+            }
         }
 
+        // Validar motivo de afastamento
         if (data.status === 'Afastado' && !data.leave_reason) {
             console.log('Motivo de afastamento ausente');
-            toastr.error('O motivo de afastamento é obrigatório para o status Afastado.');
+            toastr.error('O campo Motivo de Afastamento é obrigatório para o status Afastado.');
             $('#leave_reason').addClass('is-invalid');
-            return false;
+            if (!firstInvalidTab) {
+                firstInvalidTab = findTabForField('leave_reason');
+            }
+            isValid = false;
         }
 
+        // Validar data de demissão
         if (data.status === 'Demitido' && !data.dismissal_date) {
             console.log('Data de demissão ausente');
-            toastr.error('A data de demissão é obrigatória para o status Demitido.');
+            toastr.error('O campo Data de Demissão é obrigatório para o status Demitido.');
             $('#dismissal_date').addClass('is-invalid');
-            return false;
+            if (!firstInvalidTab) {
+                firstInvalidTab = findTabForField('dismissal_date');
+            }
+            isValid = false;
         }
 
+        // Validar dias de folga
         if (!Array.isArray(data.days_off) || data.days_off.length === 0) {
             console.log('Nenhum dia de folga selecionado');
             toastr.error('Pelo menos um dia de folga deve ser selecionado.');
             $('.days-off-container').addClass('is-invalid');
-            return false;
-        }
-
-        for (let dep of data.dependents) {
-            if (!dep.name || !dep.birth_date || !dep.parentesco) {
-                console.log('Dependente inválido:', dep);
-                toastr.error('Nome, data de nascimento e parentesco do dependente são obrigatórios.');
-                $('.dependent-item').addClass('is-invalid');
-                return false;
+            if (!firstInvalidTab) {
+                firstInvalidTab = 'work';
             }
+            isValid = false;
         }
 
-        console.log('Validação bem-sucedida');
-        return true;
+        // Ativar a aba com o primeiro campo inválido
+        if (!isValid && firstInvalidTab) {
+            console.log('Ativando aba com erro:', firstInvalidTab);
+            $('[href="#' + firstInvalidTab + '"]').tab('show');
+            logToServer('warn', 'Validação do formulário falhou, aba ativada', { tab: firstInvalidTab });
+        }
+
+        if (isValid) {
+            console.log('Validação bem-sucedida');
+            logToServer('info', 'Validação do formulário bem-sucedida', { data });
+        } else {
+            logToServer('warn', 'Validação do formulário falhou', { invalidFields: requiredFields.filter(f => !data[f] || data[f] === '') });
+        }
+
+        return isValid;
     }
 
     // Carregar opções e funcionários ao iniciar
@@ -392,7 +532,6 @@ $(document).ready(function () {
     $('#employees-table').on('click', '.employee-row', function () {
         const id = $(this).data('id');
         console.log('Carregando dados do funcionário com ID:', id);
-        // Carregar opções antes de preencher o formulário para garantir que os bancos estejam disponíveis
         loadSelectOptions().then((banks) => {
             $.ajax({
                 url: `/api/employees/${id}`,
@@ -403,7 +542,6 @@ $(document).ready(function () {
                     $('#modal-title').html('<i class="fas fa-user-edit me-2"></i><strong>Editar Funcionário</strong>');
                     clearForm();
 
-                    // Preencher os campos do formulário
                     $('#employee-id').val(employee.id);
                     $('#name').val(employee.name);
                     $('#cpf').val(employee.cpf);
@@ -448,7 +586,7 @@ $(document).ready(function () {
                     $('#trial_period').val(employee.trial_period);
                     $('#night_shift_percentage').val(employee.night_shift_percentage || '');
                     $('#first_job').val(employee.first_job || '');
-                    $('#status').val(employee.status);
+                    $('#status').val(employee.status).trigger('change');
                     $('#leave_reason').val(employee.leave_reason || '');
                     $('#dismissal_date').val(formatDateForInput(employee.dismissal_date));
                     $('#weekday_start').val(employee.weekday_start || '');
@@ -458,26 +596,21 @@ $(document).ready(function () {
                     $('#sunday_start').val(employee.sunday_start || '');
                     $('#sunday_end').val(employee.sunday_end || '');
 
-                    // Definir forma de pagamento e acionar o evento change
                     const paymentMethod = employee.payment_method || '';
                     console.log('Forma de pagamento do funcionário:', paymentMethod);
                     $('#payment_method').val(paymentMethod).trigger('change');
 
-                    // Exibir e preencher campos bancários
                     if (paymentMethod === 'PIX') {
                         $('#pix-group').removeClass('d-none');
                         if (employee.bank) {
                             console.log('Definindo banco para PIX:', employee.bank);
                             $('#pix_bank').val(employee.bank);
-                            // Verificar se o valor do banco é válido (apenas para depuração)
                             const pixBankOptions = $('#pix_bank').find('option').map(function() { return $(this).val(); }).get();
                             if ($('#pix_bank').val() !== employee.bank) {
                                 console.warn('Valor do banco inválido para PIX:', employee.bank, 'Opções disponíveis:', pixBankOptions);
                                 logToServer('warn', 'Valor do banco inválido para PIX', { employeeId: id, bank: employee.bank, availableBanks: pixBankOptions });
                             }
                         } else {
-                            console.warn('Campo bank ausente para PIX:', employee);
-                            logToServer('warn', 'Campo bank ausente para PIX', { employeeId: id });
                             $('#pix_bank').val('');
                         }
                         $('#pix_key').val(employee.pix_key || '');
@@ -486,54 +619,36 @@ $(document).ready(function () {
                         if (employee.bank) {
                             console.log('Definindo banco para Transferência:', employee.bank);
                             $('#transfer_bank').val(employee.bank);
-                            // Verificar se o valor do banco é válido (apenas para depuração)
                             const transferBankOptions = $('#transfer_bank').find('option').map(function() { return $(this).val(); }).get();
                             if ($('#transfer_bank').val() !== employee.bank) {
                                 console.warn('Valor do banco inválido para Transferência:', employee.bank, 'Opções disponíveis:', transferBankOptions);
                                 logToServer('warn', 'Valor do banco inválido para Transferência', { employeeId: id, bank: employee.bank, availableBanks: transferBankOptions });
                             }
                         } else {
-                            console.warn('Campo bank ausente para Transferência:', employee);
-                            logToServer('warn', 'Campo bank ausente para Transferência', { employeeId: id });
                             $('#transfer_bank').val('');
                         }
                         $('#agency').val(employee.agency || '');
                         $('#account').val(employee.account || '');
                         $('#account_type').val(employee.account_type || '');
                     } else {
-                        console.warn('Forma de pagamento inválida ou ausente:', paymentMethod);
-                        logToServer('warn', 'Forma de pagamento inválida ou ausente', { employeeId: id, paymentMethod });
                         $('#pix-group, #transfer-group').addClass('d-none');
                     }
 
-                    // Logar o estado dos grupos bancários
-                    console.log('Estado dos grupos bancários:', {
-                        pixGroupVisible: !$('#pix-group').hasClass('d-none'),
-                        transferGroupVisible: !$('#transfer-group').hasClass('d-none')
-                    });
-                    logToServer('info', 'Estado dos grupos bancários verificado', {
-                        employeeId: id,
-                        pixGroupVisible: !$('#pix-group').hasClass('d-none'),
-                        transferGroupVisible: !$('#transfer-group').hasClass('d-none')
-                    });
-
-                    // Preencher dias de folga
                     $('.days-off-container input[type="checkbox"]').prop('checked', false);
                     if (employee.days_off && Array.isArray(employee.days_off)) {
                         employee.days_off.forEach(day => {
-                            $(`#day_off_${day}`).prop('checked', true);
+                            $(`input[name="days_off[]"][value="${day}"]`).prop('checked', true);
                         });
                     }
 
-                    // Preencher dependentes
                     $('#dependents-list').empty();
                     if (employee.dependents && Array.isArray(employee.dependents)) {
                         employee.dependents.forEach(dep => {
                             const $dependent = $('#dependent-template .dependent-item').clone();
                             $dependent.attr('data-dependent-id', dep.id || '');
-                            $dependent.find('.dependent-name').val(dep.name || '');
-                            $dependent.find('.dependent-birth-date').val(formatDateForInput(dep.birth_date));
-                            $dependent.find('.dependent-relationship').val(dep.parentesco || '');
+                            $dependent.find('[name="dependents[].name"]').val(dep.name || '');
+                            $dependent.find('[name="dependents[].birth_date"]').val(formatDateForInput(dep.birth_date));
+                            $dependent.find('[name="dependents[].parentesco"]').val(dep.parentesco || '');
                             $('#dependents-list').append($dependent);
                         });
                     }
@@ -641,12 +756,12 @@ $(document).ready(function () {
     });
 
     // Evento de submissão do formulário
-    $('#employee-form').submit(function (e) {
+    $('#employee-form').on('submit', function (e) {
         e.preventDefault();
         console.log('Formulário submetido');
         logToServer('info', 'Formulário submetido', { module: 'funcionarios' });
 
-        $('.form-control').removeClass('is-invalid');
+        $('.form-control, .form-select').removeClass('is-invalid');
         $('.days-off-container').removeClass('is-invalid');
         $('.dependent-item').removeClass('is-invalid');
         $('#employee-form button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Salvando...');
@@ -669,6 +784,7 @@ $(document).ready(function () {
         }
 
         const data = {
+            employee_id: $('#employee-id').val() || null,
             name: $('#name').val(),
             cpf: $('#cpf').val(),
             birth_date: $('#birth_date').val(),
@@ -728,14 +844,14 @@ $(document).ready(function () {
             sunday_start: $('#sunday_start').val() || null,
             sunday_end: $('#sunday_end').val() || null,
             days_off: $('.days-off-container input[type="checkbox"]:checked').map(function () {
-                return this.id.replace('day_off_', '');
+                return this.value;
             }).get(),
             dependents: $('.dependent-item').map(function () {
                 return {
                     id: $(this).attr('data-dependent-id') || null,
-                    name: $(this).find('.dependent-name').val(),
-                    birth_date: $(this).find('.dependent-birth-date').val(),
-                    parentesco: $(this).find('.dependent-relationship').val()
+                    name: $(this).find('[name="dependents[].name"]').val() || null,
+                    birth_date: $(this).find('[name="dependents[].birth_date"]').val() || null,
+                    parentesco: $(this).find('[name="dependents[].parentesco"]').val() || null
                 };
             }).get()
         };
@@ -745,14 +861,13 @@ $(document).ready(function () {
 
         if (!validateForm(data)) {
             console.log('Validação falhou');
-            logToServer('warn', 'Validação do formulário falhou', { data });
             $('#employee-form button[type="submit"]').prop('disabled', false).html('Salvar');
             return;
         }
 
-        const isEditing = !!$('#employee-id').val();
+        const isEditing = !!data.employee_id;
         const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing ? `/api/employees/${$('#employee-id').val()}` : '/api/employees';
+        const url = isEditing ? `/api/employees/${data.employee_id}` : '/api/employees';
 
         console.log(`Enviando requisição ${method} para ${url}`);
         logToServer('info', `Iniciando requisição ${method} para ${url}`, { method, url });
@@ -770,7 +885,7 @@ $(document).ready(function () {
                 $('#employee-modal').modal('hide');
                 clearForm();
                 $('#employee-form button[type="submit"]').prop('disabled', false).html('Salvar');
-                logToServer('info', isEditing ? `Funcionário ${$('#employee-id').val()} atualizado com sucesso` : 'Funcionário adicionado com sucesso', { id: $('#employee-id').val() });
+                logToServer('info', isEditing ? `Funcionário ${data.employee_id} atualizado com sucesso` : 'Funcionário adicionado com sucesso', { id: data.employee_id });
             },
             error: function (xhr) {
                 console.error('Erro na requisição:', xhr);

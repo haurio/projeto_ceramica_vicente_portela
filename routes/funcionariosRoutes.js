@@ -37,7 +37,7 @@ const validateEmail = (email) => {
 
 // Função para validar valores ENUM
 const validateEnum = (value, allowedValues, fieldName) => {
-    if (!allowedValues.includes(value)) {
+    if (!value || !allowedValues.includes(value.trim())) {
         throw new Error(`O campo ${fieldName} deve ser um dos seguintes valores: ${allowedValues.join(', ')}`);
     }
 };
@@ -81,8 +81,7 @@ router.get('/api/options', isAuthenticated, async (req, res) => {
 
         const [departments] = await pool.query('SELECT id AS value, nome AS text FROM departamentos');
         const [positions] = await pool.query('SELECT id AS value, nome AS text, departamento_id AS department_id FROM cargos');
-        const [banks] = await pool.query('SELECT id AS value, CONCAT(nome) AS text FROM bancos');
-    //  const [banks] = await pool.query('SELECT id AS value, CONCAT(nome, " (", codigo, ")") AS text FROM bancos'); 
+        const [banks] = await pool.query('SELECT id AS value, nome AS text FROM bancos');
 
         logger.info('Opções obtidas com sucesso', {
             module: 'funcionariosRoutes',
@@ -102,13 +101,13 @@ router.get('/api/options', isAuthenticated, async (req, res) => {
             code: err.code
         });
         res.status(500).json({
-            message: 'Erro no servidor',
-            error: process.env.NODE_ENV === 'development' ? {
+            message: 'Erro ao carregar opções de departamentos, cargos ou bancos. Contate o administrador.',
+            error: {
                 message: err.message,
                 sqlMessage: err.sqlMessage,
                 sql: err.sql,
                 code: err.code
-            } : undefined
+            }
         });
     }
 });
@@ -216,8 +215,11 @@ router.get('/api/employees', isAuthenticated, async (req, res) => {
 
         rows.forEach(row => {
             try {
-                row.days_off = row.days_off ? row.days_off.split(',').map(day => day.toLowerCase()) : [];
+                row.days_off = row.days_off ? row.days_off.split(',').map(day => day.toLowerCase().trim()) : [];
                 row.dependents = row.dependents ? JSON.parse(row.dependents) : [];
+                if (row.bank !== null && row.bank !== undefined) {
+                    row.bank = row.bank.toString();
+                }
             } catch (parseErr) {
                 logger.error('Erro ao processar dados do funcionário', {
                     module: 'funcionariosRoutes',
@@ -242,13 +244,13 @@ router.get('/api/employees', isAuthenticated, async (req, res) => {
             code: err.code
         });
         res.status(500).json({
-            message: 'Erro no servidor',
-            error: process.env.NODE_ENV === 'development' ? {
+            message: 'Erro ao carregar a lista de funcionários. Contate o administrador.',
+            error: {
                 message: err.message,
                 sqlMessage: err.sqlMessage,
                 sql: err.sql,
                 code: err.code
-            } : undefined
+            }
         });
     }
 });
@@ -355,13 +357,16 @@ router.get('/api/employees/:id', isAuthenticated, async (req, res) => {
 
         if (rows.length === 0) {
             logger.warn(`Funcionário com ID ${id} não encontrado`, { module: 'funcionariosRoutes' });
-            return res.status(404).json({ message: 'Funcionário não encontrado' });
+            return res.status(404).json({ message: 'Funcionário não encontrado.' });
         }
 
         const employee = rows[0];
         try {
-            employee.days_off = employee.days_off ? employee.days_off.split(',').map(day => day.toLowerCase()) : [];
+            employee.days_off = employee.days_off ? employee.days_off.split(',').map(day => day.toLowerCase().trim()) : [];
             employee.dependents = employee.dependents ? JSON.parse(employee.dependents) : [];
+            if (employee.bank !== null && employee.bank !== undefined) {
+                employee.bank = employee.bank.toString();
+            }
         } catch (parseErr) {
             logger.error('Erro ao processar dados do funcionário', {
                 module: 'funcionariosRoutes',
@@ -385,21 +390,22 @@ router.get('/api/employees/:id', isAuthenticated, async (req, res) => {
             code: err.code
         });
         res.status(500).json({
-            message: 'Erro no servidor',
-            error: process.env.NODE_ENV === 'development' ? {
+            message: 'Erro ao carregar dados do funcionário. Contate o administrador.',
+            error: {
                 message: err.message,
                 sqlMessage: err.sqlMessage,
                 sql: err.sql,
                 code: err.code
-            } : undefined
+            }
         });
     }
 });
 
 // Criar um novo funcionário
 router.post('/api/employees', isAuthenticated, async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.getConnection();
         await client.query('BEGIN');
         await checkDatabase();
 
@@ -415,80 +421,148 @@ router.post('/api/employees', isAuthenticated, async (req, res) => {
             payment_method, pix_key, bank, agency, account, account_type, days_off, dependents
         } = req.body;
 
-        const requiredFields = [
-            'name', 'cpf', 'email', 'cargo_id', 'departamento_id', 'status', 'birth_date', 'birth_city', 'birth_state',
-            'nationality', 'education_level', 'phone', 'marital_status', 'identity_number',
-            'identity_issue_date', 'identity_issuer', 'identity_state', 'father_name', 'mother_name',
-            'has_children', 'cep', 'city', 'state', 'street', 'number', 'neighborhood', 'ctps',
-            'ctps_state', 'ctps_issue_date', 'pis', 'admission_date', 'salary',
-            'monthly_hours', 'weekly_hours', 'trial_period', 'payment_method'
-        ];
+        logger.info('Dados recebidos para criação de funcionário', {
+            module: 'funcionariosRoutes',
+            name,
+            cpf,
+            email,
+            cargo_id,
+            departamento_id,
+            status,
+            dependents: JSON.stringify(dependents),
+            fullBody: JSON.stringify(req.body)
+        });
 
-        for (const field of requiredFields) {
-            if (!req.body[field]) {
-                throw new Error(`O campo ${field} é obrigatório`);
+        // Validação de campos obrigatórios com mensagens claras
+        const requiredFields = {
+            name: 'Nome Completo',
+            cpf: 'CPF',
+            email: 'E-mail',
+            cargo_id: 'Cargo',
+            departamento_id: 'Departamento',
+            status: 'Status',
+            birth_date: 'Data de Nascimento',
+            birth_city: 'Cidade de Nascimento',
+            birth_state: 'Estado de Nascimento',
+            nationality: 'Nacionalidade',
+            education_level: 'Escolaridade',
+            phone: 'Telefone',
+            marital_status: 'Estado Civil',
+            identity_number: 'Número do RG',
+            identity_issue_date: 'Data de Emissão do RG',
+            identity_issuer: 'Órgão Emissor do RG',
+            identity_state: 'Estado Emissor do RG',
+            father_name: 'Nome do Pai',
+            mother_name: 'Nome da Mãe',
+            has_children: 'Possui Filhos',
+            cep: 'CEP',
+            city: 'Cidade',
+            state: 'Estado',
+            street: 'Rua',
+            number: 'Número',
+            neighborhood: 'Bairro',
+            ctps: 'CTPS',
+            ctps_state: 'Estado da CTPS',
+            ctps_issue_date: 'Data de Emissão da CTPS',
+            pis: 'PIS/PASEP',
+            admission_date: 'Data de Admissão',
+            salary: 'Salário',
+            monthly_hours: 'Carga Horária Mensal',
+            weekly_hours: 'Carga Horária Semanal',
+            trial_period: 'Período de Experiência',
+            payment_method: 'Forma de Pagamento',
+            weekday_start: 'Horário de Início (Semana)',
+            weekday_end: 'Horário de Fim (Semana)'
+        };
+
+        for (const [field, displayName] of Object.entries(requiredFields)) {
+            if (!req.body[field] || req.body[field].toString().trim() === '') {
+                throw new Error(`O campo ${displayName} é obrigatório.`);
             }
         }
 
         const sanitizedName = name.trim();
         const sanitizedEmail = email.trim();
-        const sanitizedCpf = cpf.trim();
+        const sanitizedCpf = cpf.replace(/[^\d]+/g, '').trim();
 
         if (!validateCPF(sanitizedCpf)) {
-            throw new Error('CPF inválido');
+            throw new Error('CPF inválido. Verifique os dígitos.');
         }
 
         if (!validateEmail(sanitizedEmail)) {
-            throw new Error('E-mail inválido');
+            throw new Error('E-mail inválido. Use o formato: exemplo@dominio.com');
         }
 
-        validateEnum(status, ['Ativo', 'Afastado', 'Demitido'], 'status');
-        validateEnum(has_children, ['sim', 'nao'], 'has_children');
-        validateEnum(payment_method, ['PIX', 'Transferência', 'Dinheiro'], 'payment_method');
-        if (first_job) validateEnum(first_job, ['sim', 'nao'], 'first_job');
-
-        if (payment_method === 'PIX' && (!pix_key || !bank)) {
-            throw new Error('Chave PIX e banco são obrigatórios para a forma de pagamento PIX');
+        // Validações de ENUM com mensagens mais claras
+        validateEnum(status, ['Ativo', 'Afastado', 'Demitido'], 'Status');
+        validateEnum(has_children, ['sim', 'nao'], 'Possui Filhos');
+        validateEnum(payment_method, ['PIX', 'Transferência', 'Dinheiro'], 'Forma de Pagamento');
+        
+        if (first_job && first_job.trim() !== '') {
+            validateEnum(first_job, ['sim', 'nao'], 'Primeiro Emprego');
         }
 
-        if (payment_method === 'Transferência' && (!bank || !agency || !account || !account_type)) {
-            throw new Error('Banco, agência, conta e tipo de conta são obrigatórios para a forma de pagamento Transferência');
+        // Validações condicionais de pagamento
+        if (payment_method === 'PIX') {
+            if (!pix_key || pix_key.trim() === '' || !bank || bank.toString().trim() === '') {
+                throw new Error('Chave PIX e Banco são obrigatórios para a forma de pagamento PIX.');
+            }
+            // Validar se o banco existe
+            const [bankExists] = await client.query('SELECT id FROM bancos WHERE id = ?', [parseInt(bank)]);
+            if (bankExists.length === 0) {
+                throw new Error('Banco selecionado para PIX não existe.');
+            }
         }
 
-        if (status === 'Afastado' && !leave_reason) {
-            throw new Error('Motivo de afastamento é obrigatório para o status Afastado');
+        if (payment_method === 'Transferência') {
+            if (!bank || bank.toString().trim() === '' || !agency || agency.trim() === '' || 
+                !account || account.trim() === '' || !account_type || account_type.trim() === '') {
+                throw new Error('Banco, Agência, Conta e Tipo de Conta são obrigatórios para a forma de pagamento Transferência.');
+            }
+            // Validar se o banco existe
+            const [bankExists] = await client.query('SELECT id FROM bancos WHERE id = ?', [parseInt(bank)]);
+            if (bankExists.length === 0) {
+                throw new Error('Banco selecionado para Transferência não existe.');
+            }
         }
 
-        if (status === 'Demitido' && !dismissal_date) {
-            throw new Error('Data de demissão é obrigatória para o status Demitido');
+        // Validações condicionais de status
+        if (status === 'Afastado' && (!leave_reason || leave_reason.trim() === '')) {
+            throw new Error('Motivo de afastamento é obrigatório para o status Afastado.');
         }
 
+        if (status === 'Demitido' && (!dismissal_date || dismissal_date.trim() === '')) {
+            throw new Error('Data de demissão é obrigatória para o status Demitido.');
+        }
+
+        // Validação de dias de folga
         if (!Array.isArray(days_off) || days_off.length === 0) {
-            throw new Error('Pelo menos um dia de folga deve ser selecionado');
+            throw new Error('Pelo menos um dia de folga deve ser selecionado.');
         }
 
         const validDays = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
         for (const day of days_off) {
-            validateEnum(day, validDays, 'days_off');
-        }
-
-        for (const dep of dependents) {
-            if (!dep.name || !dep.birth_date || !dep.parentesco) {
-                throw new Error('Nome, data de nascimento e parentesco do dependente são obrigatórios');
+            if (day && day.trim() !== '') {
+                validateEnum(day.trim(), validDays, 'Dia de Folga');
             }
         }
 
+        // Verificar se CPF ou email já existem
         const [existing] = await client.query('SELECT id FROM funcionarios WHERE cpf = ? OR email = ?', [sanitizedCpf, sanitizedEmail]);
         if (existing.length > 0) {
-            throw new Error('CPF ou e-mail já cadastrado');
+            throw new Error('CPF ou e-mail já cadastrado no sistema.');
         }
 
+        // Inserir funcionário principal
         const [funcResult] = await client.query(
             'INSERT INTO funcionarios (nome, cpf, email, cargo_id, departamento_id, status, data_admissao, data_demissao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [sanitizedName, sanitizedCpf, sanitizedEmail, cargo_id, departamento_id, status, admission_date, dismissal_date || null]
+            [sanitizedName, sanitizedCpf, sanitizedEmail, parseInt(cargo_id), parseInt(departamento_id), status, admission_date, dismissal_date || null]
         );
         const funcionarioId = funcResult.insertId;
 
+        logger.info('Funcionário principal inserido', { module: 'funcionariosRoutes', id: funcionarioId });
+
+        // Inserir dados pessoais
         await client.query(
             `INSERT INTO funcionarios_dados_pessoais (
                 funcionario_id, data_nascimento, cidade_nascimento, estado_nascimento, nacionalidade,
@@ -504,11 +578,13 @@ router.post('/api/employees', isAuthenticated, async (req, res) => {
             ]
         );
 
+        // Inserir endereço
         await client.query(
             'INSERT INTO funcionarios_enderecos (funcionario_id, cep, cidade, estado, rua, numero, bairro, complemento) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [funcionarioId, cep, city, state, street, number, neighborhood, complement || null]
         );
 
+        // Inserir dados profissionais
         await client.query(
             `INSERT INTO funcionarios_dados_profissionais (
                 funcionario_id, ctps, ctps_estado, ctps_data_emissao, pis, salario,
@@ -526,45 +602,79 @@ router.post('/api/employees', isAuthenticated, async (req, res) => {
             ]
         );
 
+        // Inserir dados bancários
         await client.query(
             'INSERT INTO funcionarios_dados_bancarios (funcionario_id, forma_pagamento, chave_pix, banco_id, agencia, conta, tipo_conta) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [funcionarioId, payment_method, pix_key || null, bank || null, agency || null, account || null, account_type || null]
+            [funcionarioId, payment_method, pix_key || null, bank ? parseInt(bank) : null, agency || null, account || null, account_type || null]
         );
 
-        for (const day of days_off) {
-            await client.query('INSERT INTO funcionarios_dias_folga (funcionario_id, dia) VALUES (?, ?)', [funcionarioId, day]);
+        // Inserir dias de folga
+        if (days_off && Array.isArray(days_off)) {
+            for (const day of days_off) {
+                if (day && day.trim() !== '') {
+                    await client.query('INSERT INTO funcionarios_dias_folga (funcionario_id, dia) VALUES (?, ?)', [funcionarioId, day.trim()]);
+                }
+            }
         }
 
-        for (const dep of dependents) {
-            await client.query(
-                'INSERT INTO funcionarios_dependentes (funcionario_id, nome, data_nascimento, parentesco) VALUES (?, ?, ?, ?)',
-                [funcionarioId, dep.name, dep.birth_date, dep.parentesco]
-            );
+        // Inserir dependentes somente se houver informações completas nos campos
+        if (dependents && Array.isArray(dependents)) {
+            for (const dep of dependents) {
+                // Verificar se todos os campos obrigatórios estão preenchidos
+                if (dep && dep.name?.trim() && dep.birth_date?.trim() && dep.parentesco?.trim()) {
+                    await client.query(
+                        'INSERT INTO funcionarios_dependentes (funcionario_id, nome, data_nascimento, parentesco) VALUES (?, ?, ?, ?)',
+                        [funcionarioId, dep.name.trim(), dep.birth_date, dep.parentesco.trim()]
+                    );
+                    logger.info('Dependente inserido', { module: 'funcionariosRoutes', funcionarioId, depName: dep.name });
+                } else {
+                    logger.warn('Dependente ignorado por campos vazios', { module: 'funcionariosRoutes', dep });
+                }
+            }
         }
 
         await client.query('COMMIT');
         logger.info('Funcionário criado com sucesso', { module: 'funcionariosRoutes', id: funcionarioId });
-        res.status(201).json({ message: 'Funcionário criado com sucesso' });
+        res.status(201).json({ 
+            message: 'Funcionário criado com sucesso!',
+            id: funcionarioId 
+        });
     } catch (err) {
-        await client.query('ROLLBACK');
+        if (client) {
+            await client.query('ROLLBACK');
+        }
         logger.error('Erro ao criar funcionário', {
             module: 'funcionariosRoutes',
             stack: err.stack,
             message: err.message,
             sqlMessage: err.sqlMessage,
             sql: err.sql,
-            code: err.code
+            code: err.code,
+            requestBody: JSON.stringify(req.body)
         });
-        res.status(400).json({ message: err.message });
+        res.status(400).json({ 
+            message: err.message,
+            error: {
+                message: err.message,
+                stack: err.stack,
+                sqlMessage: err.sqlMessage,
+                sql: err.sql,
+                code: err.code,
+                requestBody: JSON.stringify(req.body)
+            }
+        });
     } finally {
-        client.release();
+        if (client) {
+            client.release();
+        }
     }
 });
 
 // Atualizar um funcionário
 router.put('/api/employees/:id', isAuthenticated, async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.getConnection();
         await client.query('BEGIN');
         await checkDatabase();
 
@@ -581,79 +691,147 @@ router.put('/api/employees/:id', isAuthenticated, async (req, res) => {
             payment_method, pix_key, bank, agency, account, account_type, days_off, dependents
         } = req.body;
 
-        const requiredFields = [
-            'name', 'cpf', 'email', 'cargo_id', 'departamento_id', 'status', 'birth_date', 'birth_city', 'birth_state',
-            'nationality', 'education_level', 'phone', 'marital_status', 'identity_number',
-            'identity_issue_date', 'identity_issuer', 'identity_state', 'father_name', 'mother_name',
-            'has_children', 'cep', 'city', 'state', 'street', 'number', 'neighborhood', 'ctps',
-            'ctps_state', 'ctps_issue_date', 'pis', 'admission_date', 'salary',
-            'monthly_hours', 'weekly_hours', 'trial_period', 'payment_method'
-        ];
+        logger.info('Dados recebidos para atualização de funcionário', {
+            module: 'funcionariosRoutes',
+            id,
+            name,
+            cpf,
+            email,
+            cargo_id,
+            departamento_id,
+            status,
+            dependents: JSON.stringify(dependents),
+            fullBody: JSON.stringify(req.body)
+        });
 
-        for (const field of requiredFields) {
-            if (!req.body[field]) {
-                throw new Error(`O campo ${field} é obrigatório`);
+        // Validação de campos obrigatórios
+        const requiredFields = {
+            name: 'Nome Completo',
+            cpf: 'CPF',
+            email: 'E-mail',
+            cargo_id: 'Cargo',
+            departamento_id: 'Departamento',
+            status: 'Status',
+            birth_date: 'Data de Nascimento',
+            birth_city: 'Cidade de Nascimento',
+            birth_state: 'Estado de Nascimento',
+            nationality: 'Nacionalidade',
+            education_level: 'Escolaridade',
+            phone: 'Telefone',
+            marital_status: 'Estado Civil',
+            identity_number: 'Número do RG',
+            identity_issue_date: 'Data de Emissão do RG',
+            identity_issuer: 'Órgão Emissor do RG',
+            identity_state: 'Estado Emissor do RG',
+            father_name: 'Nome do Pai',
+            mother_name: 'Nome da Mãe',
+            has_children: 'Possui Filhos',
+            cep: 'CEP',
+            city: 'Cidade',
+            state: 'Estado',
+            street: 'Rua',
+            number: 'Número',
+            neighborhood: 'Bairro',
+            ctps: 'CTPS',
+            ctps_state: 'Estado da CTPS',
+            ctps_issue_date: 'Data de Emissão da CTPS',
+            pis: 'PIS/PASEP',
+            admission_date: 'Data de Admissão',
+            salary: 'Salário',
+            monthly_hours: 'Carga Horária Mensal',
+            weekly_hours: 'Carga Horária Semanal',
+            trial_period: 'Período de Experiência',
+            payment_method: 'Forma de Pagamento',
+            weekday_start: 'Horário de Início (Semana)',
+            weekday_end: 'Horário de Fim (Semana)'
+        };
+
+        for (const [field, displayName] of Object.entries(requiredFields)) {
+            if (!req.body[field] || req.body[field].toString().trim() === '') {
+                throw new Error(`O campo ${displayName} é obrigatório.`);
             }
         }
 
         const sanitizedName = name.trim();
         const sanitizedEmail = email.trim();
-        const sanitizedCpf = cpf.trim();
+        const sanitizedCpf = cpf.replace(/[^\d]+/g, '').trim();
 
         if (!validateCPF(sanitizedCpf)) {
-            throw new Error('CPF inválido');
+            throw new Error('CPF inválido. Verifique os dígitos.');
         }
 
         if (!validateEmail(sanitizedEmail)) {
-            throw new Error('E-mail inválido');
+            throw new Error('E-mail inválido. Use o formato: exemplo@dominio.com');
         }
 
-        validateEnum(status, ['Ativo', 'Afastado', 'Demitido'], 'status');
-        validateEnum(has_children, ['sim', 'nao'], 'has_children');
-        validateEnum(payment_method, ['PIX', 'Transferência', 'Dinheiro'], 'payment_method');
-        if (first_job) validateEnum(first_job, ['sim', 'nao'], 'first_job');
-
-        if (payment_method === 'PIX' && (!pix_key || !bank)) {
-            throw new Error('Chave PIX e banco são obrigatórios para a forma de pagamento PIX');
+        // Validações de ENUM
+        validateEnum(status, ['Ativo', 'Afastado', 'Demitido'], 'Status');
+        validateEnum(has_children, ['sim', 'nao'], 'Possui Filhos');
+        validateEnum(payment_method, ['PIX', 'Transferência', 'Dinheiro'], 'Forma de Pagamento');
+        
+        if (first_job && first_job.trim() !== '') {
+            validateEnum(first_job, ['sim', 'nao'], 'Primeiro Emprego');
         }
 
-        if (payment_method === 'Transferência' && (!bank || !agency || !account || !account_type)) {
-            throw new Error('Banco, agência, conta e tipo de conta são obrigatórios para a forma de pagamento Transferência');
+        if (payment_method === 'PIX') {
+            if (!pix_key || pix_key.trim() === '' || !bank || bank.toString().trim() === '') {
+                throw new Error('Chave PIX e Banco são obrigatórios para a forma de pagamento PIX.');
+            }
+            const [bankExists] = await client.query('SELECT id FROM bancos WHERE id = ?', [parseInt(bank)]);
+            if (bankExists.length === 0) {
+                throw new Error('Banco selecionado para PIX não existe.');
+            }
         }
 
-        if (status === 'Afastado' && !leave_reason) {
-            throw new Error('Motivo de afastamento é obrigatório para o status Afastado');
+        if (payment_method === 'Transferência') {
+            if (!bank || bank.toString().trim() === '' || !agency || agency.trim() === '' || 
+                !account || account.trim() === '' || !account_type || account_type.trim() === '') {
+                throw new Error('Banco, Agência, Conta e Tipo de Conta são obrigatórios para a forma de pagamento Transferência.');
+            }
+            const [bankExists] = await client.query('SELECT id FROM bancos WHERE id = ?', [parseInt(bank)]);
+            if (bankExists.length === 0) {
+                throw new Error('Banco selecionado para Transferência não existe.');
+            }
         }
 
-        if (status === 'Demitido' && !dismissal_date) {
-            throw new Error('Data de demissão é obrigatória para o status Demitido');
+        if (status === 'Afastado' && (!leave_reason || leave_reason.trim() === '')) {
+            throw new Error('Motivo de afastamento é obrigatório para o status Afastado.');
+        }
+
+        if (status === 'Demitido' && (!dismissal_date || dismissal_date.trim() === '')) {
+            throw new Error('Data de demissão é obrigatório para o status Demitido.');
         }
 
         if (!Array.isArray(days_off) || days_off.length === 0) {
-            throw new Error('Pelo menos um dia de folga deve ser selecionado');
+            throw new Error('Pelo menos um dia de folga deve ser selecionado.');
         }
 
         const validDays = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
         for (const day of days_off) {
-            validateEnum(day, validDays, 'days_off');
-        }
-
-        for (const dep of dependents) {
-            if (!dep.name || !dep.birth_date || !dep.parentesco) {
-                throw new Error('Nome, data de nascimento e parentesco do dependente são obrigatórios');
+            if (day && day.trim() !== '') {
+                validateEnum(day.trim(), validDays, 'Dia de Folga');
             }
         }
 
+        // Verificar se CPF ou email já existem para outro funcionário
         const [existing] = await client.query('SELECT id FROM funcionarios WHERE (cpf = ? OR email = ?) AND id != ?', [sanitizedCpf, sanitizedEmail, id]);
         if (existing.length > 0) {
-            throw new Error('CPF ou e-mail já cadastrado');
+            throw new Error('CPF ou e-mail já cadastrado no sistema.');
         }
 
+        // Verificar se o funcionário existe
+        const [existingEmployee] = await client.query('SELECT id FROM funcionarios WHERE id = ?', [id]);
+        if (existingEmployee.length === 0) {
+            throw new Error('Funcionário não encontrado.');
+        }
+
+        // Atualizar funcionário principal
         await client.query(
             'UPDATE funcionarios SET nome = ?, cpf = ?, email = ?, cargo_id = ?, departamento_id = ?, status = ?, data_admissao = ?, data_demissao = ? WHERE id = ?',
-            [sanitizedName, sanitizedCpf, sanitizedEmail, cargo_id, departamento_id, status, admission_date, dismissal_date || null, id]
+            [sanitizedName, sanitizedCpf, sanitizedEmail, parseInt(cargo_id), parseInt(departamento_id), status, admission_date, dismissal_date || null, id]
         );
 
+        // Atualizar dados pessoais
         await client.query(
             `UPDATE funcionarios_dados_pessoais SET
                 data_nascimento = ?, cidade_nascimento = ?, estado_nascimento = ?, nacionalidade = ?,
@@ -670,11 +848,13 @@ router.put('/api/employees/:id', isAuthenticated, async (req, res) => {
             ]
         );
 
+        // Atualizar endereço
         await client.query(
             'UPDATE funcionarios_enderecos SET cep = ?, cidade = ?, estado = ?, rua = ?, numero = ?, bairro = ?, complemento = ? WHERE funcionario_id = ?',
             [cep, city, state, street, number, neighborhood, complement || null, id]
         );
 
+        // Atualizar dados profissionais
         await client.query(
             `UPDATE funcionarios_dados_profissionais SET
                 ctps = ?, ctps_estado = ?, ctps_data_emissao = ?, pis = ?, salario = ?,
@@ -693,56 +873,88 @@ router.put('/api/employees/:id', isAuthenticated, async (req, res) => {
             ]
         );
 
+        // Atualizar dados bancários
         await client.query(
             'UPDATE funcionarios_dados_bancarios SET forma_pagamento = ?, chave_pix = ?, banco_id = ?, agencia = ?, conta = ?, tipo_conta = ? WHERE funcionario_id = ?',
-            [payment_method, pix_key || null, bank || null, agency || null, account || null, account_type || null, id]
+            [payment_method, pix_key || null, bank ? parseInt(bank) : null, agency || null, account || null, account_type || null, id]
         );
 
+        // Deletar e inserir dias de folga
         await client.query('DELETE FROM funcionarios_dias_folga WHERE funcionario_id = ?', [id]);
-        for (const day of days_off) {
-            await client.query('INSERT INTO funcionarios_dias_folga (funcionario_id, dia) VALUES (?, ?)', [id, day]);
+        if (days_off && Array.isArray(days_off)) {
+            for (const day of days_off) {
+                if (day && day.trim() !== '') {
+                    await client.query('INSERT INTO funcionarios_dias_folga (funcionario_id, dia) VALUES (?, ?)', [id, day.trim()]);
+                }
+            }
         }
 
+        // Deletar e inserir dependentes somente se houver informações completas nos campos
         await client.query('DELETE FROM funcionarios_dependentes WHERE funcionario_id = ?', [id]);
-        for (const dep of dependents) {
-            await client.query(
-                'INSERT INTO funcionarios_dependentes (funcionario_id, nome, data_nascimento, parentesco) VALUES (?, ?, ?, ?)',
-                [id, dep.name, dep.birth_date, dep.parentesco]
-            );
+        if (dependents && Array.isArray(dependents)) {
+            for (const dep of dependents) {
+                if (dep && dep.name?.trim() && dep.birth_date?.trim() && dep.parentesco?.trim()) {
+                    await client.query(
+                        'INSERT INTO funcionarios_dependentes (funcionario_id, nome, data_nascimento, parentesco) VALUES (?, ?, ?, ?)',
+                        [id, dep.name.trim(), dep.birth_date, dep.parentesco.trim()]
+                    );
+                    logger.info('Dependente inserido', { module: 'funcionariosRoutes', id, depName: dep.name });
+                } else {
+                    logger.warn('Dependente ignorado por campos vazios', { module: 'funcionariosRoutes', dep });
+                }
+            }
         }
 
         await client.query('COMMIT');
         logger.info(`Funcionário com ID ${id} atualizado com sucesso`, { module: 'funcionariosRoutes' });
-        res.json({ message: 'Funcionário atualizado com sucesso' });
+        res.json({ message: 'Funcionário atualizado com sucesso!' });
     } catch (err) {
-        await client.query('ROLLBACK');
+        if (client) {
+            await client.query('ROLLBACK');
+        }
         logger.error(`Erro ao atualizar funcionário com ID ${id}`, {
             module: 'funcionariosRoutes',
             stack: err.stack,
             message: err.message,
             sqlMessage: err.sqlMessage,
             sql: err.sql,
-            code: err.code
+            code: err.code,
+            requestBody: JSON.stringify(req.body)
         });
-        res.status(400).json({ message: err.message });
+        res.status(400).json({ 
+            message: err.message,
+            error: {
+                message: err.message,
+                stack: err.stack,
+                sqlMessage: err.sqlMessage,
+                sql: err.sql,
+                code: err.code,
+                requestBody: JSON.stringify(req.body)
+            }
+        });
     } finally {
-        client.release();
+        if (client) {
+            client.release();
+        }
     }
 });
 
 // Deletar um funcionário
 router.delete('/api/employees/:id', isAuthenticated, async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.getConnection();
         await client.query('BEGIN');
         await checkDatabase();
         const id = parseInt(req.params.id);
 
         const [existing] = await client.query('SELECT id FROM funcionarios WHERE id = ?', [id]);
         if (existing.length === 0) {
-            throw new Error('Funcionário não encontrado');
+            await client.query('ROLLBACK');
+            throw new Error('Funcionário não encontrado.');
         }
 
+        // Deletar em cascata
         await client.query('DELETE FROM funcionarios_dados_pessoais WHERE funcionario_id = ?', [id]);
         await client.query('DELETE FROM funcionarios_enderecos WHERE funcionario_id = ?', [id]);
         await client.query('DELETE FROM funcionarios_dados_profissionais WHERE funcionario_id = ?', [id]);
@@ -753,9 +965,11 @@ router.delete('/api/employees/:id', isAuthenticated, async (req, res) => {
 
         await client.query('COMMIT');
         logger.info(`Funcionário com ID ${id} excluído com sucesso`, { module: 'funcionariosRoutes' });
-        res.json({ message: 'Funcionário excluído com sucesso' });
+        res.json({ message: 'Funcionário excluído com sucesso!' });
     } catch (err) {
-        await client.query('ROLLBACK');
+        if (client) {
+            await client.query('ROLLBACK');
+        }
         logger.error(`Erro ao excluir funcionário com ID ${id}`, {
             module: 'funcionariosRoutes',
             stack: err.stack,
@@ -764,25 +978,44 @@ router.delete('/api/employees/:id', isAuthenticated, async (req, res) => {
             sql: err.sql,
             code: err.code
         });
-        res.status(400).json({ message: err.message });
+        res.status(400).json({ 
+            message: err.message,
+            error: {
+                message: err.message,
+                stack: err.stack,
+                sqlMessage: err.sqlMessage,
+                sql: err.sql,
+                code: err.code
+            }
+        });
     } finally {
-        client.release();
+        if (client) {
+            client.release();
+        }
     }
 });
 
-// Rota para receber logs do cliente
+// Rota para receber logs do cliente - CORRIGIDA
 router.post('/log-client', async (req, res) => {
     try {
-        const { msg, level, module, stack } = req.body;
-        const validLogLevels = ['info', 'warn', 'error', 'debug'];
+        const { msg, level, module, stack, metadata } = req.body;
+        // Aceitar 'success' e mapear para 'info'
+        const validLogLevels = ['info', 'warn', 'error', 'debug', 'success'];
         if (!validLogLevels.includes(level)) {
-            throw new Error('Nível de log inválido');
+            logger.warn('Nível de log inválido recebido', { module, level, msg });
+            return res.status(400).json({ message: `Nível de log "${level}" inválido. Use: ${validLogLevels.join(', ')}.` });
         }
-        logger.log(level, msg, { module, stack });
+        // Mapear 'success' para 'info'
+        const logLevel = level === 'success' ? 'info' : level;
+        logger.log(logLevel, msg, { module, stack, ...metadata });
         res.status(200).send();
     } catch (err) {
-        console.error('Erro ao processar log do cliente:', err);
-        res.status(500).json({ message: 'Erro ao processar log' });
+        logger.error('Erro ao processar log do cliente', {
+            module: 'funcionariosRoutes',
+            stack: err.stack,
+            message: err.message
+        });
+        res.status(500).json({ message: 'Erro ao processar log. Contate o administrador.' });
     }
 });
 

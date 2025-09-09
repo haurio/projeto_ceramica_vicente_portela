@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresa</title>
+    <link rel="icon" type="image/png" href="image/ico.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="css/empresa.css">
+</head>
+<body>
+    <div class="home-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="image/logo.png" alt="Sistema de Gestão Cerâmica" class="logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/funcionarios.html" class="flex items-center"><i class="fas fa-users"></i><span>Funcionários</span></a></li>
+                    <li><a href="/ferias.html"><i class="fas fa-umbrella-beach"></i><span>Férias</span></a></li>
+                    <li><a href="/empresa.html" class="flex items-center"><i class="fas fa-building"></i><span>Empresa</span></a></li>
+                    <li><a href="/Clientes.html"><i class="fas fa-user-friends"></i><span>Clientes</span></a></li>
+                    <li><a href="/pedidos.html" class="flex items-center"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a></li>
+                    <li><a href="/produtos.html" class="flex items-center"><i class="fas fa-box"></i><span>Produtos</span></a></li>
+                    <li><a href="/frota.html" class="flex items-center"><i class="fas fa-truck"></i><span>Frota</span></a></li>
+                    <li><a href="/relatorios.html" class="flex items-center"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a></li>
+                    <li><a href="/pagamentos.html" class="flex items-center"><i class="fas fa-credit-card"></i><span>Pagamentos</span></a></li>
+                    <li><a href="/agendamentos.html" class="flex items-center"><i class="fas fa-calendar-alt"></i><span>Agendamentos</span></a></li>
+                    <li><a href="/notasFiscais.html"><i class="fas fa-file-invoice-dollar"></i><span>NF-e</span></a></li>
+                    <li><a href="/home.html"><i class="fas fa-arrow-left"></i><span>Voltar</span></a></li>
+                </ul>
+            </nav>
+            <button id="toggle-sidebar" class="toggle-sidebar-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </aside>
+        <div class="main-content">
+            <main class="p-4">
+                <div class="company-section bg-white p-4 rounded shadow">
+                    <h2 class="mb-4 fw-bold"><i class="fas fa-building me-2"></i> Gerenciamento da Empresa</h2>
+                    <button id="edit-company-btn" class="add-btn btn btn-primary mb-4"><i class="fas fa-edit me-2"></i>Editar Empresa</button>
+                    <div class="table-responsive">
+                        <table id="company-table" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Razão Social</th>
+                                    <th>CNPJ</th>
+                                    <th>Inscrição Municipal</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Cidade</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="bg-dark text-white text-center py-2">
+                <div class="container">
+                    <p class="mb-0">© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>
+                    <span class="powered-by text-danger">Desenvolvido por Haurio Vieira</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <div class="modal fade" id="company-modal" tabindex="-1" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-lg" style="max-width: 950px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title"><i class="fas fa-building me-2"></i><strong>Editar Empresa</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="company-form">
+                        <input type="hidden" id="empresa-id" name="empresa_id">
+                        <ul class="nav nav-tabs mb-4" id="companyTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Dados Básicos</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="address-tab" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab" aria-controls="address" aria-selected="false">Endereço</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contato</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="additional-tab" data-bs-toggle="tab" data-bs-target="#additional" type="button" role="tab" aria-controls="additional" aria-selected="false">Dados Adicionais</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="companyTabsContent">
+                            <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-5">
+                                        <label for="razao_social" class="form-label">Razão Social *</label>
+                                        <input type="text" class="form-control" id="razao_social" name="razao_social" maxlength="100">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label for="cnpj" class="form-label">CNPJ *</label>
+                                        <input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="porte" class="form-label">Porte</label>
+                                        <select class="form-select" id="porte" name="porte">
+                                            <option value="">Selecione</option>
+                                            <option value="ME">ME</option>
+                                            <option value="EPP">EPP</option>
+                                            <option value="DEMAIS">Demais</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-6">
+                                        <label for="nome_fantasia" class="form-label">Nome Fantasia</label>
+                                        <input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" maxlength="100">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>
+                                        <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" maxlength="20">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-6">
+                                        <label for="inscricao_municipal" class="form-label">Inscrição Municipal *</label>
+                                        <input type="text" class="form-control" id="inscricao_municipal" name="inscricao_municipal" maxlength="20">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="cnae" class="form-label">CNAE Principal *</label>
+                                        <input type="text" class="form-control" id="cnae" name="cnae" placeholder="0000-0/00" maxlength="10">
+                                        <input type="hidden" id="id_cnae" name="id_cnae">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-12">
+                                        <label for="descricao_cnae" class="form-label">Descrição do CNAE</label>
+                                        <input type="text" class="form-control" id="descricao_cnae" name="descricao_cnae" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-6">
+                                        <label for="regime_tributario" class="form-label">Regime Tributário *</label>
+                                        <select id="regime_tributario" name="regime_tributario" class="form-select">
+                                            <option value="">Selecione</option>
+                                            <option value="Simples Nacional">Simples Nacional</option>
+                                            <option value="Lucro Presumido">Lucro Presumido</option>
+                                            <option value="Lucro Real">Lucro Real</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="data_fundacao" class="form-label">Data de Fundação *</label>
+                                        <input type="date" class="form-control" id="data_fundacao" name="data_fundacao">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-12">
+                                        <label for="natureza_juridica" class="form-label">Natureza Jurídica</label>
+                                        <input type="text" class="form-control" id="natureza_juridica" name="natureza_juridica" maxlength="110" placeholder="000-0 - Descrição">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-4">
+                                        <label for="cep" class="form-label">CEP *</label>
+                                        <input type="text" class="form-control" id="cep" name="cep" placeholder="00000-000">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="cidade" class="form-label">Cidade *</label>
+                                        <input type="text" class="form-control" id="cidade" name="cidade" maxlength="100" readonly >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="estado" class="form-label">Estado *</label>
+                                        <input type="text" class="form-control" id="estado" name="estado" maxlength="2" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-3">
+                                        <label for="rua" class="form-label">Rua *</label>
+                                        <input type="text" class="form-control" id="rua" name="rua" maxlength="100">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="numero" class="form-label">Número *</label>
+                                        <input type="text" class="form-control" id="numero" name="numero" maxlength="10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="bairro" class="form-label">Bairro *</label>
+                                        <input type="text" class="form-control" id="bairro" name="bairro" maxlength="50">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="complemento" class="form-label">Complemento</label>
+                                        <input type="text" class="form-control" id="complemento" name="complemento" maxlength="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input type="email" class="form-control" id="email" name="email" maxlength="100">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="telefone" class="form-label">Telefone *</label>
+                                        <input type="text" class="form-control" id="telefone" name="telefone" placeholder="(00) 00000-0000">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-6">
+                                        <label for="site" class="form-label">Website</label>
+                                        <input type="url" class="form-control" id="site" name="site" maxlength="100">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="pessoa_contato" class="form-label">Pessoa de Contato</label>
+                                        <input type="text" class="form-control" id="pessoa_contato" name="pessoa_contato" maxlength="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="additional" role="tabpanel" aria-labelledby="additional-tab">
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Situação Cadastral *</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="situacao_cadastral" id="situacao_cadastral_ativa" value="Ativa">
+                                                <label class="form-check-label" for="situacao_cadastral_ativa">Ativa</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="situacao_cadastral" id="situacao_cadastral_inativa" value="Inativa">
+                                                <label class="form-check-label" for="situacao_cadastral_inativa">Inativa</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 g-1">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Atividades Econômicas Secundárias</label>
+                                        <div id="secondary-activities-container"></div>
+                                        <button type="button" id="add-secondary-activity" class="btn btn-outline-primary mt-2"><i class="fas fa-plus me-2"></i>Adicionar Atividade</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary cancel-btn" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary save-btn">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="js/empresa.js"></script>
+</body>
+</html>

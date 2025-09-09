@@ -130,3 +130,50 @@ CREATE TABLE bancos (
     nome VARCHAR(100) NOT NULL,
     codigo CHAR(3) NOT NULL UNIQUE
 );
+
+-- Tabela de Empresa
+
+CREATE TABLE empresa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    razao_social VARCHAR(100) NOT NULL,
+    nome_fantasia VARCHAR(100),
+    cnpj VARCHAR(20) NOT NULL UNIQUE,
+    porte ENUM('ME', 'EPP', 'DEMAIS') DEFAULT 'DEMAIS',
+    inscricao_estadual VARCHAR(20),
+    inscricao_municipal VARCHAR(20) NOT NULL,
+    id_cnae INT NOT NULL,
+    regime_tributario ENUM('Simples Nacional','Lucro Presumido','Lucro Real') NOT NULL,
+    data_fundacao DATE NOT NULL,
+    natureza_juridica VARCHAR(110),
+    cep VARCHAR(10) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    estado CHAR(2) NOT NULL,
+    rua VARCHAR(100) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    bairro VARCHAR(50) NOT NULL,
+    complemento VARCHAR(100),
+    email VARCHAR(100) NOT NULL,
+    telefone VARCHAR(20) NOT NULL,
+    site VARCHAR(100),
+    pessoa_contato VARCHAR(100),
+    situacao_cadastral ENUM('Ativa','Inativa') DEFAULT 'Ativa',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_cnae) REFERENCES cnae(id)
+);
+
+-- Tabela Empresa Atividades Secundárias
+CREATE TABLE empresa_atividade_secundaria (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    id_cnae INT NOT NULL,
+    FOREIGN KEY (empresa_id) REFERENCES empresa(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_cnae) REFERENCES cnae(id)
+);
+
+-- Tabela CNAE (base única de códigos e descrições)
+CREATE TABLE cnae (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(10) NOT NULL UNIQUE,
+    descricao VARCHAR(255) NOT NULL
+);

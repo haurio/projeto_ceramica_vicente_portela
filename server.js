@@ -46,11 +46,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 const authRoutes = require('./routes/authRoutes');
 const registerRoutes = require('./routes/registerRoutes');
 const funcionariosRoutes = require('./routes/funcionariosRoutes');
+const empresaRoutes = require('./routes/empresaRoutes'); // Adiciona as rotas de empresa
 
 // Usar rotas
 app.use(authRoutes);
 app.use(registerRoutes);
 app.use(funcionariosRoutes);
+app.use(empresaRoutes); // Registra as rotas de empresa
 
 // Rota para servir Home.html
 app.get('/Home.html', (req, res) => {
@@ -65,6 +67,15 @@ app.get('/Home.html', (req, res) => {
 app.get('/funcionarios.html', (req, res) => {
     if (req.session && req.session.authenticated) {
         res.sendFile(path.join(__dirname, 'public', 'funcionarios.html'));
+    } else {
+        res.redirect('/login');
+    }
+});
+
+// Rota para servir empresa.html
+app.get('/empresa.html', (req, res) => {
+    if (req.session && req.session.authenticated) {
+        res.sendFile(path.join(__dirname, 'public', 'empresa.html'));
     } else {
         res.redirect('/login');
     }

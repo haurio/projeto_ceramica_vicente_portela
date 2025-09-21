@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ausências</title>
+    <link rel="icon" type="image/png" href="image/ico.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="css/ausencias.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <div class="home-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="image/logo.png" alt="Sistema de Gestão Cerâmica" class="logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/funcionarios.html" class="flex items-center"><i class="fas fa-users"></i><span>Funcionários</span></a></li>
+                    <li><a href="/ferias.html"><i class="fas fa-umbrella-beach"></i><span>Férias</span></a></li>
+                    <li><a href="/ausencias.html"><i class="fas fa-calendar-times"></i><span>Ausências</span></a></li>
+             <!--   <li><a href="/empresa.html"><i class="fas fa-building"></i><span>Empresa</span></a></li> -->
+             <!--   <li><a href="/Clientes.html"><i class="fas fa-user-friends"></i><span>Clientes</span></a></li> -->
+             <!--   <li><a href="/pedidos.html" class="flex items-center"><i class="fas fa-shopping-cart"></i><span>Pedidos</span></a></li> -->
+             <!--   <li><a href="/produtos.html" class="flex items-center"><i class="fas fa-box"></i><span>Produtos</span></a></li> -->
+             <!--   <li><a href="/frota.html" class="flex items-center"><i class="fas fa-truck"></i><span>Frota</span></a></li> -->
+             <!--   <li><a href="/relatorios.html" class="flex items-center"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a></li> -->
+             <!--   <li><a href="/pagamentos.html" class="flex items-center"><i class="fas fa-credit-card"></i><span>Pagamentos</span></a></li> -->
+             <!--   <li><a href="/agendamentos.html" class="flex items-center"><i class="fas fa-calendar-alt"></i><span>Agendamentos</span></a></li> -->
+             <!--   <li><a href="/notasFiscais.html"><i class="fas fa-file-invoice-dollar"></i><span>NF-e</span></a></li> -->
+                    <li><a href="/funcionarios.html"><i class="fas fa-arrow-left"></i><span>Voltar</span></a></li>
+                </ul>
+            </nav>
+            <button id="toggle-sidebar" class="toggle-sidebar-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </aside>
+        <div class="main-content">
+            <main class="p-4">
+                <div class="ausencia-section bg-white p-4 rounded shadow">
+                    <h2 class="mb-4 fw-bold"><i class="fas fa-calendar-times me-2"></i> Gerenciamento de Ausências</h2>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <label for="funcionario_ausencias" class="form-label">Selecione um Funcionário</label>
+                            <select class="form-select" id="funcionario_ausencias" name="funcionario_ausencias">
+                                <option value="">Selecione um funcionário</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card p-3">
+                                <h4>Ausências - Período de 01/01/2025 a 31/12/2025</h4>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <p><strong>Dias Ausentes:</strong> <span id="dias_ausentes">0</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card p-3">
+                                <h4>Histórico de Ausências</h4>
+                                <div id="calendar-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="add-ausencia-btn" class="add-btn btn btn-primary mb-4"><i class="fas fa-plus me-2"></i>Pedir Ausência</button>
+                    <div class="table-responsive">
+                        <table id="ausencias-table" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Funcionário</th>
+                                    <th>Tipo</th>
+                                    <th>Data de Início</th>
+                                    <th>Data de Fim</th>
+                                    <th>Justificativa</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="bg-dark text-white text-center py-2">
+                <div class="container">
+                    <p class="mb-0">© <span id="anoAtual"></span> - Todos os direitos reservados à Cerâmica Vicente Portela Ltda. CNPJ: 09.207.910/0001-14</p>
+                    <span class="powered-by text-danger">Desenvolvido por Haurio Vieira</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ausencia-modal" tabindex="-1" aria-labelledby="modal-title-ausencia" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title-ausencia"><i class="fas fa-calendar-times me-2"></i><strong>Pedir Ausência</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ausencia-form">
+                        <input type="hidden" id="ausencia-id" name="ausencia_id">
+                        <div class="mb-3">
+                            <label for="tipo_ausencia" class="form-label">Tipo de Ausência *</label>
+                            <select class="form-select" id="tipo_ausencia" name="tipo_ausencia" required>
+                                <option value="">Selecione um tipo</option>
+                                <option value="Férias">Férias - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Acidente De Trabalho">Acidente De Trabalho - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Aleitamento">Aleitamento - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Baixa médica">Baixa médica - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Casamento">Casamento - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Outro Assuntos Pessoais- Dia">Outro Assuntos Pessoais- Dia - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Ausências justificadas- Dias">Ausências justificadas- Dias - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Dia aniversário">Dia aniversário - Não desconta tempo e precisam ser aprovadas</option>
+                                <option value="Falecimento Familiar">Falecimento Familiar - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Falta Injustificada- Dias">Falta Injustificada- Dias - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Falta injustificada - Horas">Falta injustificada - Horas - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Gravidez De Risco">Gravidez De Risco - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Ausência Justificada- Horas">Ausência Justificada- Horas - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Outros Assuntos Pessoais- Horas">Outros Assuntos Pessoais- Horas - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Ida ao médico">Ida ao médico - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Isolamento Profilático">Isolamento Profilático - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Licença parental">Licença parental - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Maternidade">Maternidade - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Paternidade">Paternidade - Desconta tempo e precisam ser aprovadas</option>
+                                <option value="Tolerância de Ponto">Tolerância de Ponto - Desconta tempo e precisam ser aprovadas</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="justificativa" class="form-label">Descrição da Ausência</label>
+                            <textarea class="form-control" id="justificativa" name="justificativa" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duração</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-secondary" id="meio-dia-btn">Meio Dia</button>
+                                <button type="button" class="btn btn-secondary" id="dias-btn">Dias</button>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="intervalo-datas">
+                            <label for="data_inicio_ausencia" class="form-label">Intervalo de Datas</label>
+                            <input type="date" class="form-control" id="data_inicio_ausencia" name="data_inicio">
+                            <input type="date" class="form-control mt-2" id="data_fim_ausencia" name="data_fim">
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary cancel-btn" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary save-btn">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="js/ausencias.js"></script>
+</html>

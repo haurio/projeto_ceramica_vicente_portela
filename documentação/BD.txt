@@ -177,3 +177,46 @@ CREATE TABLE cnae (
     codigo VARCHAR(10) NOT NULL UNIQUE,
     descricao VARCHAR(255) NOT NULL
 );
+
+
+
+-- Criando a tabela de férias
+CREATE TABLE ferias (
+    id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Identificador único da solicitação de férias',
+    funcionario_id INT NOT NULL COMMENT 'ID do funcionário que tirará férias (chave estrangeira)',
+    periodo_aquisitivo_inicio DATE NOT NULL COMMENT 'Data de início do período aquisitivo (geralmente 1 ano após admissão ou última férias)',
+    periodo_aquisitivo_fim DATE NOT NULL COMMENT 'Data de fim do período aquisitivo correspondente',
+    data_inicio DATE NULL COMMENT 'Data de início das férias efetivamente concedidas',
+    data_fim DATE NULL COMMENT 'Data de término das férias',
+    dias_concedidos INT NOT NULL DEFAULT 30 COMMENT 'Quantidade de dias de férias concedidos (15 a 30 dias)',
+    status ENUM('Planejada', 'Em Andamento', 'Concluída', 'Cancelada', 'Atrasada') 
+        NOT NULL DEFAULT 'Planejada' COMMENT 'Status atual das férias',
+    motivo VARCHAR(255) NULL COMMENT 'Motivo do cancelamento, adiamento ou observações adicionais',
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Data e hora em que o registro foi criado',
+    atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data e hora da última atualização do registro',
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CHECK (data_fim >= data_inicio),
+    CHECK (dias_concedidos BETWEEN 15 AND 30) -- CLT permite 30 dias, podendo ser fracionado em no mínimo 15
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Tabela para controle de férias dos funcionários';
+
+
+
+-- Criando a tabela de ausências
+CREATE TABLE ausencias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    funcionario_id INT NOT NULL COMMENT 'Funcionário que teve a ausência',
+    tipo ENUM('Férias', 'Acidente De Trabalho', 'Aleitamento', 'Baixa médica', 'Casamento', 'Outro Assuntos Pessoais- Dia', 'Ausências justificadas- Dias', 'Dia aniversário', 'Falecimento Familiar', 'Falta Injustificada- Dias', 'Falta injustificada - Horas', 'Gravidez De Risco', 'Ausência Justificada- Horas', 'Outros Assuntos Pessoais- Horas', 'Ida ao médico', 'Isolamento Profilático', 'Licença parental', 'Maternidade', 'Paternidade', 'Tolerância de Ponto') NOT NULL COMMENT 'Tipo da ausência',
+    data_inicio DATE NOT NULL COMMENT 'Data de início da ausência',
+    data_fim DATE DEFAULT NULL COMMENT 'Data de fim da ausência (se aplicável)',
+    justificativa TEXT DEFAULT NULL COMMENT 'Descrição ou motivo informado',
+    status ENUM('Registrada', 'Justificada', 'Não Justificada', 'Cancelada') NOT NULL DEFAULT 'Registrada' COMMENT 'Situação da ausência',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de criação do registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização',
+    created_by INT COMMENT 'ID do usuário que registrou a ausência',
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Tabela para registro de ausências dos funcionários';
+
+-- Índices para otimizar consultas
+CREATE INDEX idx_ausencias_funcionario_data ON ausencias (funcionario_id, data_inicio);
+CREATE INDEX idx_ausencias_status_tipo ON ausencias (status, tipo);

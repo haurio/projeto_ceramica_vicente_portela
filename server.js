@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const mysql = require('mysql2/promise'); // Adicionado para conexão com MySQL
 const cors = require('cors');
 require('dotenv').config({ debug: false });
 require('express-async-errors');
@@ -15,6 +16,23 @@ if (!process.env.SESSION_SECRET) {
     logger.error('SESSION_SECRET não está definido no arquivo .env', { module: 'server' });
     process.exit(1);
 }
+
+// Configurar conexão com o banco de dados
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'sua-senha',
+    database: process.env.DB_NAME || 'ceramica_db',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Middleware para injetar pool nas requisições
+app.use((req, res, next) => {
+    req.pool = pool;
+    next();
+});
 
 // Configurar CORS
 app.use(cors({
@@ -42,43 +60,46 @@ app.use(session({
 // Servir arquivos estáticos da pasta "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware para verificar autenticação
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.authenticated) {
+        return next();
+    }
+    res.redirect('/login');
+}
+
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
 const registerRoutes = require('./routes/registerRoutes');
 const funcionariosRoutes = require('./routes/funcionariosRoutes');
-const empresaRoutes = require('./routes/empresaRoutes'); // Adiciona as rotas de empresa
+const empresaRoutes = require('./routes/empresaRoutes');
+const feriasRoutes = require('./routes/feriasRoutes'); // Adiciona as rotas de férias
 
 // Usar rotas
 app.use(authRoutes);
 app.use(registerRoutes);
 app.use(funcionariosRoutes);
-app.use(empresaRoutes); // Registra as rotas de empresa
+app.use(empresaRoutes);
+app.use('/api/ferias', isAuthenticated, feriasRoutes); // Registra as rotas de férias com autenticação
 
 // Rota para servir Home.html
-app.get('/Home.html', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        res.sendFile(path.join(__dirname, 'public', 'Home.html'));
-    } else {
-        res.redirect('/login');
-    }
+app.get('/Home.html', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'Home.html'));
 });
 
 // Rota para servir funcionarios.html
-app.get('/funcionarios.html', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        res.sendFile(path.join(__dirname, 'public', 'funcionarios.html'));
-    } else {
-        res.redirect('/login');
-    }
+app.get('/funcionarios.html', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'funcionarios.html'));
 });
 
 // Rota para servir empresa.html
-app.get('/empresa.html', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        res.sendFile(path.join(__dirname, 'public', 'empresa.html'));
-    } else {
-        res.redirect('/login');
-    }
+app.get('/empresa.html', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'empresa.html'));
+});
+
+// Rota para servir ferias.html
+app.get('/ferias.html', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ferias.html'));
 });
 
 // Rota para verificar sessão

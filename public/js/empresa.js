@@ -1,4 +1,3 @@
-// empresa.js
 $(document).ready(function() {
     // Configurar toastr para notificações
     toastr.options = {
@@ -26,6 +25,25 @@ $(document).ready(function() {
         };
     }
 
+    // Função para formatar data para o formato YYYY-MM-DD (necessário para <input type="date">)
+    function formatDateForInput(dateString) {
+        if (!dateString) {
+            console.warn('Data de fundação está vazia ou nula:', dateString);
+            return '';
+        }
+        // Verifica se a data já está no formato YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            return dateString; // Retorna diretamente se já estiver no formato correto
+        }
+        // Tenta converter a data para o formato YYYY-MM-DD
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            console.warn('Data de fundação inválida:', dateString);
+            return '';
+        }
+        return date.toISOString().split('T')[0]; // Retorna no formato YYYY-MM-DD
+    }
+
     // Verificar sessão antes de carregar a página
     $.ajax({
         url: '/check-session',
@@ -42,7 +60,7 @@ $(document).ready(function() {
             $('#cep').mask('00000-000');
             $('#telefone').mask('(00) 00000-0000');
             $('#cnae').mask('0000-0/00');
-            $('#natureza_juridica').mask('000-0 - SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', {
+            $('#natureza_juridica').mask('000-0 - SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', {
                 translation: {
                     'S': { pattern: /[A-Za-zÀ-ÿ0-9 ]/, recursive: true } // Suporta letras acentuadas
                 }
@@ -51,7 +69,15 @@ $(document).ready(function() {
             // Alternar visibilidade da barra lateral
             $('#toggle-sidebar').click(function() {
                 $('.sidebar').toggleClass('collapsed');
-                $(this).find('i').toggleClass('fa-chevron-left fa-chevron-right');
+                const $icon = $(this).find('i');
+                const $logo = $('.sidebar-logo .logo');
+                if ($('.sidebar').hasClass('collapsed')) {
+                    $icon.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+                    $logo.attr('src', 'image/ico.png');
+                } else {
+                    $icon.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+                    $logo.attr('src', 'image/logo.png');
+                }
             });
 
             // Função para popular a tabela de empresas
@@ -116,7 +142,6 @@ $(document).ready(function() {
             // Abrir modal para edição de empresa
             $('#edit-company-btn').click(function() {
                 $('#modal-title').html('<i class="fas fa-building me-2"></i><strong>Editar Empresa</strong>');
-                $('#company-form')[0].reset();
                 $('#empresa-id').val('');
                 $('#id_cnae').val('');
                 $('#secondary-activities-container').empty();
@@ -125,6 +150,10 @@ $(document).ready(function() {
                     method: 'GET',
                     xhrFields: { withCredentials: true },
                     success: function(company) {
+                        console.log('Dados da empresa recebidos:', company);
+                        console.log('Valor de data_fundacao (original):', company.data_fundacao);
+                        console.log('Valor de data_fundacao (formatado):', formatDateForInput(company.data_fundacao));
+                        $('#company-form')[0].reset(); // Resetar o formulário após a requisição
                         if (company) {
                             $('#empresa-id').val(company.id);
                             $('#razao_social').val(company.razao_social || '');
@@ -136,7 +165,8 @@ $(document).ready(function() {
                             $('#cnae').val(company.cnae || '');
                             $('#descricao_cnae').val(company.descricao_cnae || '');
                             $('#regime_tributario').val(company.regime_tributario || '');
-                            $('#data_fundacao').val(company.data_fundacao || '');
+                            $('#data_fundacao').val(formatDateForInput(company.data_fundacao)); // Usar formato YYYY-MM-DD
+                            console.log('Valor atribuído ao input data_fundacao:', $('#data_fundacao').val());
                             $('#cep').val(company.cep || '');
                             $('#cidade').val(company.cidade || '');
                             $('#estado').val(company.estado || '');
@@ -160,7 +190,7 @@ $(document).ready(function() {
                     },
                     error: function(jqXHR) {
                         if (jqXHR.status === 401) {
-                            window.location.href = '/login.html'; // Redireciona sem mensagem
+                            window.location.href = '/login.html';
                         } else {
                             toastr.error('Erro ao carregar dados da empresa: ' + (jqXHR.responseJSON?.message || 'Erro desconhecido'));
                             console.error('Erro /api/empresas/1:', jqXHR.responseJSON || jqXHR.statusText);
@@ -183,7 +213,6 @@ $(document).ready(function() {
                             if (data && data.id && data.descricao) {
                                 idCnaeInput.val(data.id);
                                 descricaoInput.val(data.descricao);
-                                // Removido toastr.success para consulta bem-sucedida
                             } else {
                                 idCnaeInput.val('');
                                 descricaoInput.val('');
@@ -192,7 +221,7 @@ $(document).ready(function() {
                         },
                         error: function(jqXHR) {
                             if (jqXHR.status === 401) {
-                                window.location.href = '/login.html'; // Redireciona sem mensagem
+                                window.location.href = '/login.html';
                             } else {
                                 idCnaeInput.val('');
                                 descricaoInput.val('');
@@ -294,6 +323,13 @@ $(document).ready(function() {
                         isValid = false;
                     }
                 });
+
+                // Validar formato da data_fundacao
+                const dataFundacao = $('#data_fundacao').val();
+                if (dataFundacao && !/^\d{4}-\d{2}-\d{2}$/.test(dataFundacao)) {
+                    toastr.error('Por favor, insira uma data de fundação válida (formato: AAAA-MM-DD).');
+                    isValid = false;
+                }
 
                 // Validar situação cadastral
                 if (!$('input[name="situacao_cadastral"]:checked').val()) {
@@ -401,7 +437,7 @@ $(document).ready(function() {
                     },
                     error: function(jqXHR) {
                         if (jqXHR.status === 401) {
-                            window.location.href = '/login.html'; // Redireciona sem mensagem
+                            window.location.href = '/login.html';
                         } else {
                             toastr.error(`Erro ao ${empresaId ? 'atualizar' : 'adicionar'} empresa: ${jqXHR.responseJSON?.message || 'Erro desconhecido'}`);
                             console.error(`Erro ${method} /api/empresas/${empresaId || ''}:`, jqXHR.responseJSON || jqXHR.statusText);

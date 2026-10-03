@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const logger = require('../utils/logger');
+const { logAuditoria } = require('../utils/auditoria');
 
 // Middleware para verificar autenticação
 const isAuthenticated = (req, res, next) => {
@@ -55,8 +56,14 @@ const checkDatabase = async () => {
         ];
 
         for (const table of requiredTables) {
-            const [rows] = await pool.query('SHOW TABLES LIKE ?', [table]);
-            if (rows.length === 0) {
+            const [rows] = await pool.query(
+                `SELECT EXISTS (
+                    SELECT 1 FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = ?
+                ) AS found`,
+                [table]
+            );
+            if (!rows[0]?.found) {
                 throw new Error(`Tabela ${table} não encontrada no banco de dados`);
             }
         }
@@ -116,7 +123,6 @@ router.get('/api/options', isAuthenticated, async (req, res) => {
 router.get('/api/employees', isAuthenticated, async (req, res) => {
     try {
         await checkDatabase();
-        await pool.query('SET SESSION group_concat_max_len = 10000');
         logger.info('Iniciando consulta de funcionários', { module: 'funcionariosRoutes' });
 
         const [rows] = await pool.query(`
@@ -183,21 +189,18 @@ router.get('/api/employees', isAuthenticated, async (req, res) => {
                 db.agencia AS agency, 
                 db.conta AS account, 
                 db.tipo_conta AS account_type,
-                COALESCE(GROUP_CONCAT(df.dia), '') AS days_off,
                 COALESCE((
-                    SELECT CONCAT(
-                        '[',
-                        GROUP_CONCAT(
-                            JSON_OBJECT(
-                                'id', d.id,
-                                'name', d.nome,
-                                'birth_date', d.data_nascimento,
-                                'parentesco', d.parentesco
-                            )
-                            SEPARATOR ','
-                        ),
-                        ']'
-                    )
+                    SELECT STRING_AGG(df.dia::text, ',')
+                    FROM funcionarios_dias_folga df
+                    WHERE df.funcionario_id = f.id
+                ), '') AS days_off,
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', d.id,
+                        'name', d.nome,
+                        'birth_date', d.data_nascimento,
+                        'parentesco', d.parentesco
+                    ))::text
                     FROM funcionarios_dependentes d 
                     WHERE d.funcionario_id = f.id
                 ), '[]') AS dependents
@@ -209,8 +212,6 @@ router.get('/api/employees', isAuthenticated, async (req, res) => {
             LEFT JOIN funcionarios_dados_profissionais prof ON f.id = prof.funcionario_id
             LEFT JOIN funcionarios_dados_bancarios db ON f.id = db.funcionario_id
             LEFT JOIN bancos b ON db.banco_id = b.id
-            LEFT JOIN funcionarios_dias_folga df ON f.id = df.funcionario_id
-            GROUP BY f.id
         `);
 
         rows.forEach(row => {
@@ -324,21 +325,18 @@ router.get('/api/employees/:id', isAuthenticated, async (req, res) => {
                 db.agencia AS agency, 
                 db.conta AS account, 
                 db.tipo_conta AS account_type,
-                COALESCE(GROUP_CONCAT(df.dia), '') AS days_off,
                 COALESCE((
-                    SELECT CONCAT(
-                        '[',
-                        GROUP_CONCAT(
-                            JSON_OBJECT(
-                                'id', d.id,
-                                'name', d.nome,
-                                'birth_date', d.data_nascimento,
-                                'parentesco', d.parentesco
-                            )
-                            SEPARATOR ','
-                        ),
-                        ']'
-                    )
+                    SELECT STRING_AGG(df.dia::text, ',')
+                    FROM funcionarios_dias_folga df
+                    WHERE df.funcionario_id = f.id
+                ), '') AS days_off,
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', d.id,
+                        'name', d.nome,
+                        'birth_date', d.data_nascimento,
+                        'parentesco', d.parentesco
+                    ))::text
                     FROM funcionarios_dependentes d 
                     WHERE d.funcionario_id = f.id
                 ), '[]') AS dependents
@@ -350,9 +348,7 @@ router.get('/api/employees/:id', isAuthenticated, async (req, res) => {
             LEFT JOIN funcionarios_dados_profissionais prof ON f.id = prof.funcionario_id
             LEFT JOIN funcionarios_dados_bancarios db ON f.id = db.funcionario_id
             LEFT JOIN bancos b ON db.banco_id = b.id
-            LEFT JOIN funcionarios_dias_folga df ON f.id = df.funcionario_id
             WHERE f.id = ?
-            GROUP BY f.id
         `, [id]);
 
         if (rows.length === 0) {
@@ -635,6 +631,13 @@ router.post('/api/employees', isAuthenticated, async (req, res) => {
 
         await client.query('COMMIT');
         logger.info('Funcionário criado com sucesso', { module: 'funcionariosRoutes', id: funcionarioId });
+        await logAuditoria(req, {
+            modulo: 'funcionarios',
+            acao: 'criar',
+            entidade: 'funcionario',
+            entidadeId: funcionarioId,
+            descricao: `Criou funcionário "${name}"`,
+        });
         res.status(201).json({ 
             message: 'Funcionário criado com sucesso!',
             id: funcionarioId 
@@ -907,6 +910,13 @@ router.put('/api/employees/:id', isAuthenticated, async (req, res) => {
 
         await client.query('COMMIT');
         logger.info(`Funcionário com ID ${id} atualizado com sucesso`, { module: 'funcionariosRoutes' });
+        await logAuditoria(req, {
+            modulo: 'funcionarios',
+            acao: 'editar',
+            entidade: 'funcionario',
+            entidadeId: id,
+            descricao: `Alterou funcionário "${name}"`,
+        });
         res.json({ message: 'Funcionário atualizado com sucesso!' });
     } catch (err) {
         if (client) {
@@ -965,6 +975,13 @@ router.delete('/api/employees/:id', isAuthenticated, async (req, res) => {
 
         await client.query('COMMIT');
         logger.info(`Funcionário com ID ${id} excluído com sucesso`, { module: 'funcionariosRoutes' });
+        await logAuditoria(req, {
+            modulo: 'funcionarios',
+            acao: 'excluir',
+            entidade: 'funcionario',
+            entidadeId: id,
+            descricao: `Excluiu funcionário #${id}`,
+        });
         res.json({ message: 'Funcionário excluído com sucesso!' });
     } catch (err) {
         if (client) {

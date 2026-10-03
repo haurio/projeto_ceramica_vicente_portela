@@ -31,6 +31,10 @@ yarn-error.log*
 
 # Ignorar pastas de cache
 .cache/
+.dev-server-port
+
+# Certificados e arquivos fiscais
+storage/nfe/
 
 # Ignorar pasta de fotos/BKP
 .BKP/

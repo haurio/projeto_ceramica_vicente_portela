@@ -51,6 +51,7 @@ body {
     display: flex;
     justify-content: center;
     width: 100%;
+    margin: 0 auto;
 }
 
 .navbar-nav-center .nav-link {
@@ -150,7 +151,7 @@ body {
     height: 100%;
     background-color: #D32F2F;
     width: 0%;
-    transition: width 5s linear;
+    transition: width 6s linear;
 }
 
 /* Main Slider */
@@ -161,7 +162,8 @@ body {
     overflow: hidden;
 }
 
-.swiper-container {
+.swiper-container,
+.swiper {
     width: 100%;
     height: 100%;
 }

@@ -1,32 +1,25 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const mysql = require('mysql2/promise'); // Adicionado para conexão com MySQL
 const cors = require('cors');
 require('dotenv').config({ debug: false });
 require('express-async-errors');
 const logger = require('./utils/logger');
+const pool = require('./db');
+const { requirePageAccess } = require('./utils/apiAccess');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const BASE_PORT = Number(process.env.PORT) || 3000;
+const MAX_PORT = BASE_PORT + 10;
+const DEV_PORT_FILE = path.join(__dirname, '.dev-server-port');
 
 // Verificar se SESSION_SECRET está definido
 if (!process.env.SESSION_SECRET) {
     logger.error('SESSION_SECRET não está definido no arquivo .env', { module: 'server' });
     process.exit(1);
 }
-
-// Configurar conexão com o banco de dados
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'sua-senha',
-    database: process.env.DB_NAME || 'ceramica_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
 
 // Middleware para injetar pool nas requisições
 app.use((req, res, next) => {
@@ -35,27 +28,62 @@ app.use((req, res, next) => {
 });
 
 // Configurar CORS
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'];
+
 app.use(cors({
-    origin: 'http://localhost:3000', // Substitua pela origem do frontend
-    credentials: true // Permite o envio de cookies
+    origin(origin, callback) {
+        if (
+            !origin
+            || allowedOrigins.includes(origin)
+            || /^http:\/\/localhost:\d+$/.test(origin)
+            || /^https:\/\/[a-z0-9-]+\.ngrok-free\.app$/i.test(origin)
+            || /^https:\/\/[a-z0-9-]+\.ngrok\.io$/i.test(origin)
+        ) {
+            callback(null, true);
+            return;
+        }
+
+        callback(null, false);
+    },
+    credentials: true
 }));
 
 // Middleware para processar dados do formulário
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
+const cookieSecure = String(process.env.COOKIE_SECURE || '').toLowerCase() === 'true';
+app.set('trust proxy', 1);
+
 // Middleware para sessões
 app.use(session({
+    name: 'ceramica.sid',
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Use true em produção com HTTPS
+        // Só marcar Secure com HTTPS real (COOKIE_SECURE=true). NODE_ENV=production em localhost
+        // impede o cookie de sessão no Edge e quebra o login mobile.
+        secure: cookieSecure,
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 24 horas
-        sameSite: 'lax' // Ajuste para 'none' em produção com HTTPS
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: cookieSecure ? 'none' : 'lax',
+        path: '/',
     }
 }));
+
+// Servir build React (landing page)
+const reactDistPath = path.join(__dirname, 'client', 'dist');
+
+app.get(['/', '/index.html'], (req, res, next) => {
+    const indexPath = path.join(reactDistPath, 'index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) next(err);
+    });
+});
+
+app.use(express.static(reactDistPath));
 
 // Servir arquivos estáticos da pasta "public"
 app.use(express.static(path.join(__dirname, 'public')));
@@ -74,44 +102,74 @@ const registerRoutes = require('./routes/registerRoutes');
 const funcionariosRoutes = require('./routes/funcionariosRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
 const feriasRoutes = require('./routes/feriasRoutes'); // Adiciona as rotas de férias
+const ausenciasRoutes = require('./routes/ausenciasRoutes');
+const galleryRoutes = require('./routes/galleryRoutes');
+const fornecedoresRoutes = require('./routes/fornecedoresRoutes');
+const clientesRoutes = require('./routes/clientesRoutes');
+const produtosRoutes = require('./routes/produtosRoutes');
+const frotaRoutes = require('./routes/frotaRoutes');
+const representantesRoutes = require('./routes/representantesRoutes');
+const cipaRoutes = require('./routes/cipaRoutes');
+const financeiroRoutes = require('./routes/financeiroRoutes');
+const sistemaRoutes = require('./routes/sistemaRoutes');
+const estoqueRoutes = require('./routes/estoqueRoutes');
+const pedidosRoutes = require('./routes/pedidosRoutes');
+const nfeRoutes = require('./routes/nfeRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const configRoutes = require('./routes/configRoutes');
+const configCadastrosRoutes = require('./routes/configCadastrosRoutes');
+const relatoriosRoutes = require('./routes/relatoriosRoutes');
 
-// Usar rotas
-app.use(authRoutes);
-app.use(registerRoutes);
-app.use(funcionariosRoutes);
-app.use(empresaRoutes);
-app.use('/api/ferias', isAuthenticated, feriasRoutes); // Registra as rotas de férias com autenticação
+// Sessão/logout antes de routers com auth global.
+// Sempre 200: 401 no check-session polui o console do browser no primeiro carregamento.
+app.get('/check-session', async (req, res) => {
+    const send = (payload, status = 200) => {
+        if (res.headersSent) return;
+        res.status(status).json(payload);
+    };
 
-// Rota para servir Home.html
-app.get('/Home.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'Home.html'));
-});
+    try {
+        if (!req.session?.authenticated) {
+            send({ authenticated: false, user: null });
+            return;
+        }
 
-// Rota para servir funcionarios.html
-app.get('/funcionarios.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'funcionarios.html'));
-});
+        if (req.session.user?.id) {
+            try {
+                const [rows] = await pool.query(
+                    `SELECT id, username, email, full_name, status, perfil, permissoes, forcar_troca_senha
+                     FROM users WHERE id = ?`,
+                    [req.session.user.id]
+                );
 
-// Rota para servir empresa.html
-app.get('/empresa.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'empresa.html'));
-});
+                if (rows.length) {
+                    if (String(rows[0].status || '').toLowerCase() === 'inativo') {
+                        req.session.destroy(() => {
+                            send({ authenticated: false, user: null, message: 'Usuário inativo.' });
+                        });
+                        return;
+                    }
+                    const { sessionUserFromRow } = require('./utils/usersAccess');
+                    req.session.user = sessionUserFromRow(rows[0]);
+                }
+            } catch (error) {
+                logger.error('Erro ao atualizar dados da sessão', { module: 'server', stack: error.stack });
+            }
+        }
 
-// Rota para servir ferias.html
-app.get('/ferias.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'ferias.html'));
-});
-
-// Rota para verificar sessão
-app.get('/check-session', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        res.status(200).json({ authenticated: true });
-    } else {
-        res.status(401).json({ authenticated: false });
+        send({
+            authenticated: true,
+            user: req.session.user || null,
+        });
+    } catch (error) {
+        logger.error('Erro em /check-session', { module: 'server', stack: error.stack });
+        send({
+            authenticated: Boolean(req.session?.authenticated),
+            user: req.session?.user || null,
+        });
     }
 });
 
-// Rota para logout
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -120,6 +178,61 @@ app.post('/logout', (req, res) => {
         }
         logger.info('Logout realizado com sucesso', { module: 'server' });
         res.status(200).json({ message: 'Logout realizado com sucesso' });
+    });
+});
+
+// Usar rotas
+app.use(galleryRoutes);
+app.use(authRoutes);
+app.use(registerRoutes);
+app.use(funcionariosRoutes);
+app.use(empresaRoutes);
+app.use(fornecedoresRoutes);
+app.use(clientesRoutes);
+app.use(produtosRoutes);
+app.use(frotaRoutes);
+app.use(representantesRoutes);
+app.use(cipaRoutes);
+app.use(financeiroRoutes);
+app.use(sistemaRoutes);
+app.use('/api/estoque', requirePageAccess('/estoque'), estoqueRoutes);
+app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/nfe', nfeRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/config', configCadastrosRoutes);
+app.use(dashboardRoutes);
+app.use(relatoriosRoutes);
+app.use('/api/ferias', isAuthenticated, feriasRoutes); // Registra as rotas de férias com autenticação
+app.use('/api/ausencias', isAuthenticated, ausenciasRoutes);
+
+// Rota para servir Home.html
+app.get('/Home.html', isAuthenticated, (req, res) => {
+    res.redirect('/dashboard');
+});
+
+// Rotas legadas redirecionam para o painel React
+app.get('/funcionarios.html', isAuthenticated, (req, res) => {
+    res.redirect('/funcionarios');
+});
+
+app.get('/empresa.html', isAuthenticated, (req, res) => {
+    res.redirect('/empresa');
+});
+
+app.get('/ferias.html', isAuthenticated, (req, res) => {
+    res.redirect('/ferias');
+});
+
+app.get('/ausencias.html', isAuthenticated, (req, res) => {
+    res.redirect('/ausencias');
+});
+
+app.get(/^\/(admin|dashboard|funcionarios|fornecedores|empresa|clientes|representantes|produtos|estoque|frota|ferias|ausencias|cipa|financeiro|pedidos|agendamentos|emitir-nfe|notas-fiscais|configuracoes|relatorios|pagamentos|mobile)(\/.*)?$/, (req, res) => {
+    res.sendFile(path.join(reactDistPath, 'index.html'), (err) => {
+        if (err) {
+            logger.error('Build React não encontrado para rota do painel', { module: 'server', stack: err.stack });
+            res.status(503).send('Execute npm run build:client para acessar o painel administrativo.');
+        }
     });
 });
 
@@ -149,6 +262,36 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
 });
 
-app.listen(PORT, () => {
-    logger.info(`Servidor rodando em http://localhost:${PORT}`, { module: 'server' });
-});
+function writeDevPortFile(port) {
+    fs.writeFileSync(DEV_PORT_FILE, String(port), 'utf8');
+}
+
+function startServer(port) {
+    if (port > MAX_PORT) {
+        logger.error(`Nenhuma porta disponível entre ${BASE_PORT} e ${MAX_PORT}`, { module: 'server' });
+        process.exit(1);
+        return;
+    }
+
+    const server = app.listen(port, '0.0.0.0', () => {
+        writeDevPortFile(port);
+        logger.info(`Servidor rodando em http://localhost:${port} e http://127.0.0.1:${port}`, { module: 'server' });
+
+        if (port !== BASE_PORT) {
+            logger.warn(`Porta ${BASE_PORT} ocupada. Servidor iniciado na porta ${port}.`, { module: 'server' });
+        }
+    });
+
+    server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+            logger.warn(`Porta ${port} em uso, tentando ${port + 1}...`, { module: 'server' });
+            startServer(port + 1);
+            return;
+        }
+
+        logger.error(`Erro ao iniciar servidor: ${error.message}`, { module: 'server', stack: error.stack });
+        process.exit(1);
+    });
+}
+
+startServer(BASE_PORT);

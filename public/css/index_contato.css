@@ -141,6 +141,13 @@
     width: 900px;
 }
 
+#productModal .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #fff;
+    color: inherit;
+}
+
 .modal-header {
     border-bottom: none;
     padding: 15px;

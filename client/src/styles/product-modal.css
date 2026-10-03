@@ -1,0 +1,1013 @@
+/* Sobrescreve CSS legado (index_contato.css / index.css) que fixa width: 900px */
+#productModal.product-modal {
+    --bs-modal-margin: 0.75rem;
+    padding: 0 !important;
+}
+
+#productModal .modal-dialog,
+#productModal .product-modal-dialog {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: min(940px, calc(100vw - 24px)) !important;
+    width: min(940px, calc(100vw - 24px)) !important;
+    box-sizing: border-box;
+}
+
+#productModal .modal-content,
+#productModal .product-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+}
+
+#productModal .modal-header .modal-title,
+#productModalLabel {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: center !important;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+#productModal .product-modal-eyebrow {
+    text-align: center;
+}
+
+.product-modal .modal-content {
+
+    border: none;
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+
+    background: #fff;
+
+    color: #3d2e2a;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.product-modal .modal-backdrop.show {
+
+    opacity: 0.65;
+
+    backdrop-filter: blur(4px);
+
+}
+
+
+
+.product-modal-dialog {
+
+    max-width: min(940px, calc(100vw - 32px));
+
+    width: min(940px, calc(100vw - 32px));
+
+}
+
+
+
+.product-modal-header {
+
+    background: linear-gradient(165deg, var(--brand-dark-warm) 0%, var(--brand-dark-warm-mid) 100%);
+
+    color: #fff;
+
+    border: none;
+
+    padding: 18px 48px 18px 24px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 16px;
+
+    width: 100%;
+
+    position: relative;
+
+    text-align: center;
+
+}
+
+
+
+.product-modal-header > div:first-child {
+
+    flex: 1;
+
+    min-width: 0;
+
+    text-align: center;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 100%;
+
+}
+
+
+
+.product-modal-header .btn-close {
+
+    filter: invert(1);
+
+    opacity: 0.85;
+
+    position: absolute;
+
+    right: 16px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    margin: 0;
+
+}
+
+
+
+.product-modal-eyebrow {
+
+    display: block;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.75rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+
+    color: var(--brand-red-light);
+
+    margin-bottom: 6px;
+
+    text-align: center;
+
+    width: 100%;
+
+}
+
+
+
+.product-modal-header .modal-title {
+
+    font-family: 'Playfair Display', serif;
+
+    font-size: 1.65rem;
+
+    font-weight: 700;
+
+    margin: 0;
+
+    color: #fff;
+
+}
+
+
+
+.product-modal-body {
+
+    padding: 0;
+
+    background: #faf6f2;
+
+}
+
+
+
+.product-modal-layout {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    min-height: 320px;
+
+}
+
+
+
+.product-modal-visual {
+
+    background: #fff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 36px;
+
+    border-right: 1px solid rgba(26, 18, 16, 0.08);
+
+}
+
+
+
+.product-modal-image {
+
+    width: 100%;
+
+    max-height: 360px;
+
+    object-fit: contain;
+
+}
+
+
+
+.product-modal-panel {
+
+    padding: 28px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+}
+
+
+
+.product-modal-specs {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+
+@media (min-width: 577px) {
+
+    .product-modal-specs {
+
+        gap: 12px;
+
+    }
+
+}
+
+
+
+.product-spec-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    background: #fff;
+
+    border: 1px solid rgba(26, 18, 16, 0.1);
+
+    border-radius: 10px;
+
+    padding: 14px 16px;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+
+.product-spec-card > div {
+
+    min-width: 0;
+
+    flex: 1;
+
+}
+
+
+
+.product-spec-card i {
+
+    width: 40px;
+
+    height: 40px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(155, 28, 28, 0.1);
+
+    color: var(--brand-red);
+
+    flex-shrink: 0;
+
+}
+
+
+
+.product-spec-card span {
+
+    display: block;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.78rem;
+
+    color: #6b7280;
+
+    margin-bottom: 2px;
+
+}
+
+
+
+.product-spec-card strong {
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 1rem;
+
+    color: #3d2e2a;
+
+}
+
+
+
+.product-modal-calculator {
+
+    background: #fff;
+
+    border: 1px solid rgba(26, 18, 16, 0.1);
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+}
+
+
+
+.product-modal-calculator h3 {
+
+    font-family: 'Playfair Display', serif;
+
+    font-size: 1.2rem;
+
+    color: #3d2e2a;
+
+    margin: 0 0 6px;
+
+    text-align: center;
+
+}
+
+
+
+.product-modal-calculator p {
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.88rem;
+
+    color: #6b7280;
+
+    margin: 0 0 14px;
+
+    text-align: center;
+
+}
+
+
+
+.product-modal-inputs {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr auto;
+
+    gap: 10px;
+
+}
+
+
+
+.product-modal-inputs input {
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    padding: 7px 10px;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.82rem;
+
+}
+
+
+
+.product-modal-inputs input:focus {
+
+    outline: none;
+
+    border-color: var(--brand-red);
+
+    box-shadow: 0 0 0 3px rgba(155, 28, 28, 0.12);
+
+}
+
+
+
+.product-modal-calc-btn {
+
+    background: var(--brand-red);
+
+    color: #fff;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 7px 14px;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.82rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.25s ease;
+
+    white-space: nowrap;
+
+}
+
+
+
+.product-modal-calc-btn:hover {
+
+    background: var(--brand-red-dark);
+
+}
+
+
+
+.product-modal-result {
+
+    margin-top: 14px;
+
+    padding: 14px 16px;
+
+    background: rgba(155, 28, 28, 0.08);
+
+    border-radius: 8px;
+
+    border-left: 3px solid var(--brand-red);
+
+}
+
+
+
+.product-modal-result span {
+
+    display: block;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.82rem;
+
+    color: #6b7280;
+
+}
+
+
+
+.product-modal-result strong {
+
+    font-family: 'Playfair Display', serif;
+
+    font-size: 1.5rem;
+
+    color: var(--brand-red);
+
+}
+
+
+
+.product-modal-whatsapp {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    background: #25d366;
+
+    color: #fff;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.82rem;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    transition: background 0.25s ease, transform 0.25s ease;
+
+    flex: 1;
+
+    min-width: 0;
+
+    white-space: nowrap;
+
+}
+
+
+
+.product-modal-whatsapp:hover {
+
+    background: #1fb855;
+
+    color: #fff;
+
+    transform: translateY(-2px);
+
+}
+
+
+
+.product-modal-footer {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 12px;
+
+    padding: 16px 20px;
+
+    background: #fff;
+
+    border-top: 1px solid rgba(26, 18, 16, 0.08);
+
+}
+
+
+
+.product-modal-footer-note {
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.85rem;
+
+    color: #6b7280;
+
+    margin: 0;
+
+    text-align: center;
+
+    width: 100%;
+
+}
+
+
+
+.product-modal-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    width: 100%;
+
+}
+
+
+
+.product-modal-close-btn {
+
+    background: transparent;
+
+    border: 1px solid rgba(26, 18, 16, 0.2);
+
+    color: #3d2e2a;
+
+    border-radius: 8px;
+
+    padding: 10px 16px;
+
+    font-family: 'Lato', sans-serif;
+
+    font-size: 0.82rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.25s ease, border-color 0.25s ease;
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+
+
+.product-modal-close-btn:hover {
+
+    background: rgba(26, 18, 16, 0.06);
+
+    border-color: rgba(26, 18, 16, 0.35);
+
+}
+
+
+
+@media (max-width: 991px) {
+
+    .product-modal-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .product-modal-visual {
+
+        border-right: none;
+
+        border-bottom: 1px solid rgba(26, 18, 16, 0.08);
+
+        padding: 24px;
+
+    }
+
+}
+
+
+
+@media (max-width: 576px) {
+
+    #productModal .modal-dialog,
+    #productModal .product-modal-dialog {
+
+        margin: 12px auto !important;
+
+        width: calc(100% - 24px) !important;
+
+        max-width: calc(100% - 24px) !important;
+
+    }
+
+
+
+    .product-modal-header {
+
+        padding: 12px 40px 12px 10px;
+
+        flex-shrink: 0;
+
+        gap: 8px;
+
+    }
+
+
+
+    .product-modal-header .btn-close {
+
+        right: 10px;
+
+    }
+
+
+
+    .product-modal-header .modal-title,
+    #productModalLabel {
+
+        font-size: 1.05rem;
+
+        line-height: 1.25;
+
+        padding-right: 0 !important;
+
+        padding-left: 0 !important;
+
+        text-align: center !important;
+
+        width: 100%;
+
+    }
+
+
+
+    .product-modal .modal-content {
+
+        border-radius: 12px;
+
+        max-height: 92vh;
+
+        min-height: auto;
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+
+    .product-modal-body {
+
+        overflow-y: auto;
+
+        overflow-x: hidden;
+
+        flex: 1;
+
+        min-height: 0;
+
+    }
+
+
+
+    .product-modal-layout {
+
+        min-height: auto;
+
+    }
+
+
+
+    .product-modal-visual {
+
+        padding: 10px;
+
+    }
+
+
+
+    .product-modal-image {
+
+        max-height: 220px;
+
+        min-height: 180px;
+
+        object-fit: contain;
+
+    }
+
+
+
+    .product-modal-panel {
+
+        padding: 8px 6px;
+
+        gap: 10px;
+
+        box-sizing: border-box;
+
+        overflow: hidden;
+
+        align-items: center;
+
+    }
+
+
+
+    .product-modal-specs,
+    .product-modal-calculator {
+
+        width: 100%;
+
+    }
+
+
+
+    .product-modal-specs {
+
+        gap: 5px;
+
+        padding: 0;
+
+    }
+
+
+
+    .product-spec-card {
+
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+
+        padding: 10px 2px;
+
+        gap: 6px;
+
+    }
+
+
+
+    .product-spec-card i {
+
+        width: 30px;
+
+        height: 30px;
+
+        font-size: 0.72rem;
+
+        flex-shrink: 0;
+
+    }
+
+
+
+    .product-spec-card span {
+
+        font-size: 0.58rem;
+
+        margin-bottom: 0;
+
+        line-height: 1.2;
+
+    }
+
+
+
+    .product-spec-card strong {
+
+        font-size: 0.64rem;
+
+        line-height: 1.2;
+
+        word-break: break-word;
+
+    }
+
+
+
+    .product-modal-calculator {
+
+        padding: 12px;
+
+    }
+
+
+
+    .product-modal-calculator h3 {
+
+        font-size: 0.95rem;
+
+        text-align: center;
+
+    }
+
+
+
+    .product-modal-calculator p {
+
+        font-size: 0.8rem;
+
+        margin-bottom: 10px;
+
+        text-align: center;
+
+    }
+
+
+
+    .product-modal-inputs {
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 6px;
+
+    }
+
+
+
+    .product-modal-inputs input {
+
+        padding: 6px 8px;
+
+        font-size: 0.78rem;
+
+    }
+
+
+
+    .product-modal-calc-btn {
+
+        grid-column: 1 / -1;
+
+        width: auto;
+
+        align-self: center;
+
+        min-width: 120px;
+
+        padding: 6px 14px;
+
+        font-size: 0.78rem;
+
+    }
+
+
+
+    .product-modal-whatsapp {
+
+        padding: 9px 12px;
+
+        font-size: 0.78rem;
+
+    }
+
+
+
+    .product-modal-footer {
+
+        padding: 12px;
+
+        flex-shrink: 0;
+
+        gap: 10px;
+
+    }
+
+
+
+    .product-modal-footer-note {
+
+        font-size: 0.75rem;
+
+    }
+
+
+
+    .product-modal-actions {
+
+        gap: 8px;
+
+    }
+
+
+
+    .product-modal-close-btn {
+
+        padding: 9px 12px;
+
+        font-size: 0.78rem;
+
+    }
+
+}
+
+

@@ -1,0 +1,12 @@
+Certificado A1 de TESTE (autoassinado) — apenas homologação local.
+
+Arquivo: certificado-a1-homologacao-teste.pfx
+Senha: 123456
+
+No admin → Configurações → NF-e:
+1. Ambiente: Homologação
+2. Digite a senha 123456
+3. Envie este .pfx
+4. Validade, CNPJ e titular preenchem sozinhos
+
+NÃO use em produção. A SEFAZ real exige e-CNPJ ICP-Brasil.

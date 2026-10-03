@@ -1,0 +1,100 @@
+body {
+    padding-top: 0 !important;
+}
+
+/* Landing: página inteira rolável até o footer */
+html:has(.landing-shell) {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-size: 87.5%;
+}
+
+body:has(.landing-shell) {
+    display: block;
+    height: auto;
+    min-height: 100%;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 0 !important;
+}
+
+#root:has(.landing-shell) {
+    display: block;
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+}
+
+.landing-shell {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+}
+
+.landing-shell > main {
+    display: block;
+    overflow: visible;
+    height: auto;
+}
+
+.landing-shell .container {
+    width: min(1400px, calc(100% - 48px));
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.landing-shell .section-head {
+    max-width: none;
+    margin-bottom: 36px;
+}
+
+.landing-shell .section-title {
+    font-size: clamp(1.55rem, 2.1vw, 2rem);
+    margin-bottom: 12px;
+}
+
+.landing-shell .section-lead {
+    font-size: 0.95rem;
+    max-width: 52rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+html {
+    scroll-padding-top: 104px;
+}
+
+#home,
+#produtos,
+#empresa,
+#historia,
+#galeria,
+#duvidas,
+#atendimento,
+#contato {
+    scroll-margin-top: 104px;
+}
+
+.section-head {
+    scroll-margin-top: 104px;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 100vh;
+}

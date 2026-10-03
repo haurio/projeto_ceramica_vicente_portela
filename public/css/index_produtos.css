@@ -95,10 +95,16 @@
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
 .modal-header .modal-title {
     padding-left: 20px;
+}
+
+#productModal .modal-header .modal-title {
+    padding-left: 0 !important;
 }
 
 .modal-content-container {

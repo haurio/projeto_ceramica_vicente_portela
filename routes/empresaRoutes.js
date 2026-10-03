@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const logger = require('../utils/logger');
+const { logAuditoria } = require('../utils/auditoria');
 
 // Middleware para verificar autenticação
 const isAuthenticated = (req, res, next) => {
@@ -12,14 +13,6 @@ const isAuthenticated = (req, res, next) => {
     logger.info('Sessão autenticada com sucesso', { module: 'empresaRoutes', sessionId: req.session.id });
     next();
 };
-
-// Rota para verificar sessão
-router.get('/check-session', (req, res) => {
-    if (req.session && req.session.authenticated) {
-        return res.status(200).json({ authenticated: true });
-    }
-    return res.status(401).json({ authenticated: false });
-});
 
 // Rota para listar todas as empresas
 router.get('/api/empresas', isAuthenticated, async (req, res) => {
@@ -51,9 +44,12 @@ router.get('/api/empresas/:id', isAuthenticated, async (req, res) => {
         // Buscar dados da empresa
         const [empresaRows] = await client.query(`
             SELECT 
-                e.*, c.codigo AS cnae, c.descricao AS descricao_cnae
+                e.*,
+                e.id_cnae_principal AS id_cnae,
+                c.codigo AS cnae,
+                c.descricao AS descricao_cnae
             FROM empresa e
-            LEFT JOIN cnae c ON e.id_cnae = c.id
+            LEFT JOIN cnae c ON e.id_cnae_principal = c.id
             WHERE e.id = ?
         `, [id]);
 
@@ -62,16 +58,8 @@ router.get('/api/empresas/:id', isAuthenticated, async (req, res) => {
             return res.status(404).json({ message: 'Empresa não encontrada' });
         }
 
-        // Buscar atividades secundárias
-        const [atividadesSecundarias] = await client.query(`
-            SELECT c.id AS id_cnae, c.codigo AS cnae, c.descricao AS descricao_cnae
-            FROM empresa_atividade_secundaria eas
-            JOIN cnae c ON eas.id_cnae = c.id
-            WHERE eas.empresa_id = ?
-        `, [id]);
-
         const empresa = empresaRows[0];
-        empresa.atividades_secundarias = atividadesSecundarias;
+        empresa.atividades_secundarias = [];
 
         logger.info(`Empresa com ID ${id} obtida com sucesso`, { module: 'empresaRoutes' });
         res.json(empresa);
@@ -154,7 +142,7 @@ router.post('/api/empresas', isAuthenticated, async (req, res) => {
         const [result] = await client.query(`
             INSERT INTO empresa (
                 razao_social, nome_fantasia, cnpj, porte, inscricao_estadual, inscricao_municipal,
-                id_cnae, regime_tributario, data_fundacao, natureza_juridica, cep, cidade, estado,
+                id_cnae_principal, regime_tributario, data_fundacao, natureza_juridica, cep, cidade, estado,
                 rua, numero, bairro, complemento, email, telefone, site, pessoa_contato, situacao_cadastral
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
@@ -166,20 +154,15 @@ router.post('/api/empresas', isAuthenticated, async (req, res) => {
 
         const empresaId = result.insertId;
 
-        // Inserir atividades secundárias
-        if (atividades_secundarias && Array.isArray(atividades_secundarias)) {
-            for (const atividade of atividades_secundarias) {
-                if (atividade.id_cnae) {
-                    await client.query(`
-                        INSERT INTO empresa_atividade_secundaria (empresa_id, id_cnae)
-                        VALUES (?, ?)
-                    `, [empresaId, atividade.id_cnae]);
-                }
-            }
-        }
-
         await client.query('COMMIT');
         logger.info(`Empresa criada com sucesso`, { module: 'empresaRoutes', id: empresaId });
+        await logAuditoria(req, {
+            modulo: 'empresa',
+            acao: 'criar',
+            entidade: 'empresa',
+            entidadeId: empresaId,
+            descricao: `Criou empresa "${razao_social}"`,
+        });
         res.json({ id: empresaId, message: 'Empresa criada com sucesso' });
     } catch (error) {
         if (client) await client.query('ROLLBACK');
@@ -191,7 +174,7 @@ router.post('/api/empresas', isAuthenticated, async (req, res) => {
             sql: error.sql,
             code: error.code
         });
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 'ER_DUP_ENTRY' || error.code === '23505') {
             res.status(400).json({ message: 'CNPJ já cadastrado' });
         } else {
             res.status(500).json({ message: 'Erro ao criar empresa', error: error.message });
@@ -232,7 +215,7 @@ router.put('/api/empresas/:id', isAuthenticated, async (req, res) => {
         await client.query(`
             UPDATE empresa
             SET razao_social = ?, nome_fantasia = ?, cnpj = ?, porte = ?, inscricao_estadual = ?,
-                inscricao_municipal = ?, id_cnae = ?, regime_tributario = ?, data_fundacao = ?,
+                inscricao_municipal = ?, id_cnae_principal = ?, regime_tributario = ?, data_fundacao = ?,
                 natureza_juridica = ?, cep = ?, cidade = ?, estado = ?, rua = ?, numero = ?,
                 bairro = ?, complemento = ?, email = ?, telefone = ?, site = ?, pessoa_contato = ?,
                 situacao_cadastral = ?
@@ -244,26 +227,15 @@ router.put('/api/empresas/:id', isAuthenticated, async (req, res) => {
             site || null, pessoa_contato || null, situacao_cadastral || 'Ativa', id
         ]);
 
-        // Deletar atividades secundárias existentes
-        await client.query(`
-            DELETE FROM empresa_atividade_secundaria
-            WHERE empresa_id = ?
-        `, [id]);
-
-        // Inserir novas atividades secundárias
-        if (atividades_secundarias && Array.isArray(atividades_secundarias)) {
-            for (const atividade of atividades_secundarias) {
-                if (atividade.id_cnae) {
-                    await client.query(`
-                        INSERT INTO empresa_atividade_secundaria (empresa_id, id_cnae)
-                        VALUES (?, ?)
-                    `, [id, atividade.id_cnae]);
-                }
-            }
-        }
-
         await client.query('COMMIT');
         logger.info(`Empresa com ID ${id} atualizada com sucesso`, { module: 'empresaRoutes' });
+        await logAuditoria(req, {
+            modulo: 'empresa',
+            acao: 'editar',
+            entidade: 'empresa',
+            entidadeId: id,
+            descricao: `Alterou empresa "${razao_social}"`,
+        });
         res.json({ message: 'Empresa atualizada com sucesso' });
     } catch (error) {
         if (client) await client.query('ROLLBACK');
@@ -275,7 +247,7 @@ router.put('/api/empresas/:id', isAuthenticated, async (req, res) => {
             sql: error.sql,
             code: error.code
         });
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 'ER_DUP_ENTRY' || error.code === '23505') {
             res.status(400).json({ message: 'CNPJ já cadastrado' });
         } else {
             res.status(500).json({ message: 'Erro ao atualizar empresa', error: error.message });

@@ -1,0 +1,44 @@
+:root {
+    --toastify-color-success: #1f7a4f;
+    --toastify-color-error: var(--brand-red);
+    --toastify-color-warning: #b45309;
+    --toastify-color-info: #2E3B4E;
+    --toastify-font-family: 'Lato', sans-serif;
+    --toastify-toast-width: 320px;
+    --toastify-toast-min-height: 56px;
+    --toastify-toast-bd-radius: 12px;
+}
+
+.Toastify__toast {
+    border-radius: 12px;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+    font-size: 0.9rem;
+    padding: 2px;
+}
+
+.Toastify__toast-body {
+    line-height: 1.45;
+}
+
+.Toastify__toast-body strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.Toastify__progress-bar {
+    height: 3px;
+}
+
+@media (max-width: 480px) {
+    :root {
+        --toastify-toast-width: calc(100vw - 1.5rem);
+    }
+
+    .Toastify__toast-container--top-right {
+        right: 0.75rem;
+        top: 0.75rem;
+    }
+}

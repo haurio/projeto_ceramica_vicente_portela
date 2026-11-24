@@ -2056,7 +2056,7 @@
 
 .admin-product-stock-row {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 0.75rem;
     align-items: start;
 }
@@ -4049,9 +4049,87 @@
 }
 
 .admin-estoque-row-detail {
-    font-size: 0.78rem;
-    color: rgba(26, 18, 16, 0.58);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.35rem;
+}
+
+.admin-estoque-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    padding: 0.16rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(26, 18, 16, 0.1);
+    font-size: 0.74rem;
     font-weight: 600;
+    color: rgba(26, 18, 16, 0.72);
+    line-height: 1.25;
+}
+
+.admin-estoque-meta i {
+    font-size: 0.68rem;
+    color: rgba(26, 18, 16, 0.44);
+}
+
+.admin-estoque-meta strong {
+    font-weight: 700;
+    color: var(--brand-dark-warm);
+}
+
+.admin-estoque-meta.is-code {
+    background: rgba(26, 18, 16, 0.06);
+    color: var(--brand-dark-warm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.admin-estoque-meta.is-min {
+    background: rgba(196, 138, 26, 0.09);
+    border-color: rgba(196, 138, 26, 0.24);
+    color: #8a5e0b;
+}
+
+.admin-estoque-meta.is-min i,
+.admin-estoque-meta.is-min strong {
+    color: #8a5e0b;
+}
+
+.admin-estoque-meta.is-tipo {
+    font-weight: 700;
+}
+
+.admin-estoque-meta.is-tipo.is-entrada {
+    background: rgba(26, 122, 63, 0.12);
+    border-color: rgba(26, 122, 63, 0.28);
+    color: #156534;
+}
+
+.admin-estoque-meta.is-tipo.is-entrada i {
+    color: #1a7a3f;
+}
+
+.admin-estoque-meta.is-tipo.is-saida {
+    background: rgba(155, 28, 28, 0.12);
+    border-color: rgba(155, 28, 28, 0.28);
+    color: #9b1c1c;
+}
+
+.admin-estoque-meta.is-tipo.is-saida i {
+    color: #b32424;
+}
+
+.admin-estoque-meta.is-tipo.is-ajuste {
+    background: rgba(59, 90, 140, 0.12);
+    border-color: rgba(59, 90, 140, 0.28);
+    color: #2d4a77;
+}
+
+.admin-estoque-meta.is-tipo.is-ajuste i {
+    color: #3b5a8c;
 }
 
 .admin-estoque-tag {

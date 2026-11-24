@@ -704,6 +704,7 @@ router.get('/api/relatorios/:id', async (req, res) => {
                 { key: 'codigo', label: 'Código' },
                 { key: 'nome', label: 'Produto' },
                 { key: 'categoria', label: 'Categoria' },
+                { key: 'estoque_minimo', label: 'Estoque mín.' },
                 { key: 'estoque', label: 'Saldo' },
                 { key: 'unidade', label: 'Unidade' },
                 { key: 'status', label: 'Status' },
@@ -719,15 +720,20 @@ router.get('/api/relatorios/:id', async (req, res) => {
                 params.push(status);
             }
             const whereSql = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+            await safeQuery('ALTER TABLE produtos ADD COLUMN IF NOT EXISTS estoque_minimo NUMERIC(12, 2) DEFAULT 50');
             rows = await safeQuery(`
-                SELECT codigo, nome, categoria, estoque, unidade, status
+                SELECT codigo, nome, categoria, estoque, COALESCE(estoque_minimo, 50) AS estoque_minimo, unidade, status
                 FROM produtos
                 ${whereSql}
                 ORDER BY nome
             `, params);
             summary = {
                 total: rows.length,
-                baixo: rows.filter((row) => Number(row.estoque || 0) <= 10).length,
+                baixo: rows.filter((row) => {
+                    const qty = Number(row.estoque || 0);
+                    const min = Number(row.estoque_minimo ?? 50);
+                    return qty <= 0 || (min > 0 && qty < min);
+                }).length,
             };
         }
 

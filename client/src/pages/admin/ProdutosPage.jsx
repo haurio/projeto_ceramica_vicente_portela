@@ -35,17 +35,17 @@ export default function ProdutosPage() {
     const [produtos, setProdutos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const loadProdutos = useCallback(async () => {
-        setLoading(true);
+    const loadProdutos = useCallback(async ({ silent = false } = {}) => {
+        if (!silent) setLoading(true);
 
         try {
             const data = await fetchProdutos();
             setProdutos(Array.isArray(data) ? data : []);
         } catch (error) {
             showToast('error', error.message || 'Erro ao carregar produtos.');
-            setProdutos([]);
+            if (!silent) setProdutos([]);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     }, []);
 
@@ -56,6 +56,10 @@ export default function ProdutosPage() {
     useEffect(() => {
         setActiveTab(resolveTab(searchParams.get('tab')));
     }, [searchParams]);
+
+    const handleStockChanged = useCallback(() => {
+        loadProdutos({ silent: true });
+    }, [loadProdutos]);
 
     const handleTabSelect = (key) => {
         const next = resolveTab(key);
@@ -127,8 +131,8 @@ export default function ProdutosPage() {
                             </span>
                         )}
                     >
-                        <div className="admin-table-wrap">
-                            <Table responsive hover className="admin-table mb-0">
+                        <div className="admin-table-scroll">
+                            <Table bordered hover className="mb-0 align-middle">
                                 <thead>
                                     <tr>
                                         <th>Código</th>
@@ -159,16 +163,17 @@ export default function ProdutosPage() {
                                         <tr
                                             key={item.id}
                                             className="admin-table-row-clickable"
-                                            onClick={() => navigate(`/produtos/${item.id}`)}
+                                            onClick={() => navigate(`/produtos/${item.id}/editar`)}
                                         >
                                             <td>{item.codigo || '—'}</td>
                                             <td>{item.nome}</td>
                                             <td>{item.categoria || '—'}</td>
                                             <td>{formatMedidas(item)}</td>
                                             <td>
-                                                {item.peso_kg != null && item.peso_kg !== ''
-                                                    ? `${Number(item.peso_kg).toLocaleString('pt-BR')} kg`
-                                                    : '—'}
+                                                {String(item.peso || '').trim()
+                                                    || (item.peso_kg != null && item.peso_kg !== ''
+                                                        ? `${Number(item.peso_kg).toLocaleString('pt-BR')} kg`
+                                                        : '—')}
                                             </td>
                                             <td>{formatCurrency(item.preco_milheiro)}</td>
                                             <td>{formatCurrency(item.preco_m2)}</td>
@@ -202,7 +207,12 @@ export default function ProdutosPage() {
                             </span>
                         )}
                     >
-                        <EstoquePanel ref={estoqueRef} active={activeTab === 'estoque'} mode="estoque" />
+                        <EstoquePanel
+                            ref={estoqueRef}
+                            active={activeTab === 'estoque'}
+                            mode="estoque"
+                            onStockChanged={handleStockChanged}
+                        />
                     </Tab>
 
                     <Tab
@@ -218,6 +228,7 @@ export default function ProdutosPage() {
                             ref={movimentacoesRef}
                             active={activeTab === 'movimentacoes'}
                             mode="movimentacoes"
+                            onStockChanged={handleStockChanged}
                         />
                     </Tab>
                 </Tabs>

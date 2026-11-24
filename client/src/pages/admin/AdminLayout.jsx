@@ -13,7 +13,13 @@ import { showToast } from '../../utils/toast';
 import { getShortName, getUserInitials } from '../../utils/userDisplay';
 import { getAppVersionLabel } from '../../config/appInfo';
 
-function isPathActive(pathname, to, end = false) {
+function isPathActive(pathname, to, end = false, search = '') {
+    if (pathname === '/produtos') {
+        const tab = new URLSearchParams(search).get('tab');
+        const isEstoqueTab = tab === 'estoque' || tab === 'movimentacoes';
+        if (to === '/estoque') return isEstoqueTab;
+        if (to === '/produtos') return !isEstoqueTab;
+    }
     if (end) return pathname === to;
     return pathname === to || pathname.startsWith(`${to}/`);
 }
@@ -117,7 +123,7 @@ export default function AdminLayout() {
                             <div className="admin-nav-section-links">
                                 {group.items.map((item) => {
                                     const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-                                    const parentActive = isPathActive(location.pathname, item.to, item.end);
+                                    const parentActive = isPathActive(location.pathname, item.to, item.end, location.search);
 
                                     return (
                                         <NavLink

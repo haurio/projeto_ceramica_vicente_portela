@@ -79,9 +79,18 @@ function formatNfeLabel(item) {
     return { text: 'Sem NF', tone: 'muted' };
 }
 
+function getEstoqueMinimo(item) {
+    const raw = item?.estoque_minimo;
+    if (raw === null || raw === undefined || raw === '') return 50;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 50;
+}
+
 function StockRow({ item }) {
     const qty = Number(item.estoque) || 0;
-    const tone = qty <= 0 ? 'danger' : qty < 50 ? 'warning' : 'success';
+    const min = getEstoqueMinimo(item);
+    const isBaixo = qty > 0 && min > 0 && qty < min;
+    const tone = qty <= 0 ? 'danger' : isBaixo ? 'warning' : 'success';
 
     return (
         <article className={`admin-estoque-row is-${tone}`}>
@@ -89,16 +98,41 @@ function StockRow({ item }) {
                 <div className="admin-estoque-row-title">
                     <strong>{item.nome}</strong>
                     <span className={`admin-estoque-tag is-${tone}${tone !== 'success' ? ' is-blink' : ''}`}>
-                        {qty <= 0 ? 'Zerado' : qty < 50 ? 'Baixo' : 'Ok'}
+                        {qty <= 0 ? 'Zerado' : isBaixo ? 'Baixo' : 'Ok'}
                     </span>
                 </div>
-                <span className="admin-estoque-row-detail">
-                    {item.codigo ? `${item.codigo} · ` : ''}
-                    {item.categoria || 'Sem categoria'}
-                    {item.ultima_data
-                        ? ` · última: ${formatDateBr(item.ultima_data)}${item.ultimo_tipo ? ` (${TIPO_LABEL[item.ultimo_tipo] || item.ultimo_tipo})` : ''}`
-                        : ' · sem movimentações'}
-                </span>
+                <div className="admin-estoque-row-detail">
+                    {item.codigo ? (
+                        <span className="admin-estoque-meta is-code">{item.codigo}</span>
+                    ) : null}
+                    <span className="admin-estoque-meta">
+                        <i className="fas fa-tag" aria-hidden="true" />
+                        {item.categoria || 'Sem categoria'}
+                    </span>
+                    {min > 0 ? (
+                        <span className="admin-estoque-meta is-min">
+                            <i className="fas fa-bell" aria-hidden="true" />
+                            Mínimo: <strong>{formatQtyShort(min)}</strong>
+                        </span>
+                    ) : null}
+                    <span className="admin-estoque-meta">
+                        <i className="fas fa-clock" aria-hidden="true" />
+                        {item.ultima_data ? (
+                            <>
+                                Última: <strong>{formatDateBr(item.ultima_data)}</strong>
+                            </>
+                        ) : 'Sem movimentações'}
+                    </span>
+                    {item.ultima_data && item.ultimo_tipo ? (
+                        <span className={`admin-estoque-meta is-tipo is-${item.ultimo_tipo}`}>
+                            <i
+                                className={`fas ${item.ultimo_tipo === 'saida' ? 'fa-arrow-down' : item.ultimo_tipo === 'ajuste' ? 'fa-sliders-h' : 'fa-arrow-up'}`}
+                                aria-hidden="true"
+                            />
+                            {TIPO_LABEL[item.ultimo_tipo] || item.ultimo_tipo}
+                        </span>
+                    ) : null}
+                </div>
             </div>
             <span className="admin-estoque-row-metric">
                 {formatQtyShort(qty)}
@@ -169,7 +203,7 @@ function HistoryRow({ item }) {
     );
 }
 
-const EstoquePanel = forwardRef(function EstoquePanel({ active = true, mode = 'estoque' }, ref) {
+const EstoquePanel = forwardRef(function EstoquePanel({ active = true, mode = 'estoque', onStockChanged }, ref) {
     const isMovimentacoes = mode === 'movimentacoes';
     const view = isMovimentacoes ? 'historico' : 'saldos';
     const [saldos, setSaldos] = useState([]);
@@ -220,7 +254,8 @@ const EstoquePanel = forwardRef(function EstoquePanel({ active = true, mode = 'e
         const zerados = saldos.filter((item) => (Number(item.estoque) || 0) <= 0).length;
         const baixos = saldos.filter((item) => {
             const qty = Number(item.estoque) || 0;
-            return qty > 0 && qty < 50;
+            const min = getEstoqueMinimo(item);
+            return qty > 0 && min > 0 && qty < min;
         }).length;
         return { totalProdutos, totalUnidades, zerados, baixos };
     }, [saldos]);
@@ -365,6 +400,7 @@ const EstoquePanel = forwardRef(function EstoquePanel({ active = true, mode = 'e
             setShowProducao(false);
             await loadSaldos();
             if (view === 'historico') await loadMovimentos();
+            onStockChanged?.();
         } catch (error) {
             showToast('error', error.message || 'Erro ao registrar produção.');
         } finally {
@@ -403,6 +439,7 @@ const EstoquePanel = forwardRef(function EstoquePanel({ active = true, mode = 'e
             setShowSaida(false);
             await loadSaldos();
             if (view === 'historico') await loadMovimentos();
+            onStockChanged?.();
         } catch (error) {
             showToast('error', error.message || 'Erro ao registrar saída.');
         } finally {

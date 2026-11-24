@@ -35,6 +35,11 @@ async function ensureEstoqueTables() {
             `);
 
             await pool.query(`
+                ALTER TABLE produtos
+                ADD COLUMN IF NOT EXISTS estoque_minimo NUMERIC(12, 2) DEFAULT 50
+            `).catch(() => null);
+
+            await pool.query(`
                 CREATE TABLE IF NOT EXISTS estoque_movimentos (
                     id SERIAL PRIMARY KEY,
                     produto_id INTEGER NOT NULL REFERENCES produtos(id) ON DELETE CASCADE,
@@ -212,6 +217,7 @@ router.get('/', async (_req, res) => {
                 p.unidade,
                 p.status,
                 COALESCE(p.estoque, 0) AS estoque,
+                COALESCE(p.estoque_minimo, 50) AS estoque_minimo,
                 (
                     SELECT m.data_movimento
                     FROM estoque_movimentos m

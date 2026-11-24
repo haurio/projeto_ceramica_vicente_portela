@@ -34,6 +34,7 @@ const EMPTY_FORM = {
     desconto_acima_de: '0',
     unidade: 'un',
     estoque: '0',
+    estoque_minimo: '50',
     imagem_url: '',
     status: 'Ativo',
     observacoes: '',
@@ -66,6 +67,7 @@ function normalizeProdutoForm(data = {}) {
         desconto_acima_de: formatDecimalBr(String(data.desconto_acima_de ?? 0).replace('.', ','), 2) || '0',
         unidade: data.unidade || 'un',
         estoque: data.estoque ?? '0',
+        estoque_minimo: data.estoque_minimo ?? '50',
         imagem_url: data.imagem_url || '',
         status: data.status || 'Ativo',
         observacoes: data.observacoes || '',
@@ -332,6 +334,16 @@ export default function ProdutoModal({ produtoId, onClose, onSaved }) {
                                                 ))}
                                             </AdminFloatField>
                                             <AdminFloatField
+                                                label="Estoque mínimo"
+                                                name="estoque_minimo"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={form.estoque_minimo}
+                                                onChange={handleChange}
+                                                placeholder="50"
+                                            />
+                                            <AdminFloatField
                                                 label="Estoque"
                                                 name="estoque"
                                                 type="number"
@@ -342,7 +354,7 @@ export default function ProdutoModal({ produtoId, onClose, onSaved }) {
                                             />
                                         </div>
                                         <p className="admin-ferias-form-hint mb-0 mt-2">
-                                            O estoque é controlado na aba <strong>Estoque</strong> em Produtos (produção do dia e saídas).
+                                            O estoque é controlado na aba <strong>Estoque</strong> em Produtos (produção do dia e saídas). O alerta de estoque baixo dispara abaixo do <strong>Estoque mínimo</strong>.
                                         </p>
                                     </FormSection>
 

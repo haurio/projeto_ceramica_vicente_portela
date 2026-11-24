@@ -44,6 +44,116 @@ const uploadImagem = multer({
 
 let tableReadyPromise = null;
 
+async function ensureEstoqueMinimoBeforeEstoque() {
+    const [positions] = await pool.query(`
+        SELECT column_name, ordinal_position
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'produtos'
+          AND column_name IN ('estoque', 'estoque_minimo')
+    `);
+
+    const posMap = Object.fromEntries(positions.map((r) => [r.column_name, Number(r.ordinal_position)]));
+    if (!posMap.estoque || !posMap.estoque_minimo || posMap.estoque_minimo < posMap.estoque) {
+        return;
+    }
+
+    const client = await pool.getConnection();
+    try {
+        await client.beginTransaction();
+        await client.query('LOCK TABLE produtos IN ACCESS EXCLUSIVE MODE');
+
+        const [cols] = await client.query(`
+            SELECT
+                a.attname AS column_name,
+                pg_catalog.format_type(a.atttypid, a.atttypmod) AS col_type,
+                a.attnotnull AS not_null,
+                pg_get_expr(d.adbin, d.adrelid) AS col_default
+            FROM pg_attribute a
+            LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+            WHERE a.attrelid = 'produtos'::regclass
+              AND a.attnum > 0
+              AND NOT a.attisdropped
+            ORDER BY a.attnum
+        `);
+
+        const minCol = cols.find((c) => c.column_name === 'estoque_minimo');
+        const withoutMin = cols.filter((c) => c.column_name !== 'estoque_minimo');
+        const estoqueIdx = withoutMin.findIndex((c) => c.column_name === 'estoque');
+        if (!minCol || estoqueIdx === -1) {
+            await client.rollback();
+            return;
+        }
+
+        const orderedCols = [
+            ...withoutMin.slice(0, estoqueIdx),
+            minCol,
+            ...withoutMin.slice(estoqueIdx),
+        ];
+
+        const [fks] = await client.query(`
+            SELECT conname, conrelid::regclass::text AS tbl, pg_get_constraintdef(oid) AS def
+            FROM pg_constraint
+            WHERE confrelid = 'produtos'::regclass AND contype = 'f'
+        `);
+
+        await client.query('ALTER SEQUENCE IF EXISTS produtos_id_seq OWNED BY NONE');
+
+        const colDefs = orderedCols.map((c) => {
+            const parts = [`"${c.column_name}"`, c.col_type];
+            if (c.col_default) parts.push(`DEFAULT ${c.col_default}`);
+            if (c.not_null) parts.push('NOT NULL');
+            return parts.join(' ');
+        });
+
+        await client.query(`CREATE TABLE produtos_reordered (${colDefs.join(', ')})`);
+
+        const colNames = orderedCols.map((c) => `"${c.column_name}"`).join(', ');
+        await client.query(`INSERT INTO produtos_reordered (${colNames}) SELECT ${colNames} FROM produtos`);
+
+        for (const fk of fks) {
+            await client.query(`ALTER TABLE ${fk.tbl} DROP CONSTRAINT "${fk.conname}"`);
+        }
+
+        await client.query('DROP TABLE produtos');
+        await client.query('ALTER TABLE produtos_reordered RENAME TO produtos');
+        await client.query('ALTER TABLE produtos ADD CONSTRAINT produtos_pkey PRIMARY KEY (id)');
+        await client.query('ALTER SEQUENCE IF EXISTS produtos_id_seq OWNED BY produtos.id');
+        await client.query(`
+            SELECT setval(
+                'produtos_id_seq',
+                COALESCE((SELECT MAX(id) FROM produtos), 1),
+                (SELECT COUNT(*) > 0 FROM produtos)
+            )
+        `);
+        await client.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS produtos_codigo_unique
+            ON produtos (codigo)
+            WHERE codigo IS NOT NULL AND codigo <> ''
+        `);
+
+        for (const fk of fks) {
+            await client.query(`ALTER TABLE ${fk.tbl} ADD CONSTRAINT "${fk.conname}" ${fk.def}`);
+        }
+
+        await client.commit();
+        logger.info('Coluna estoque_minimo reposicionada antes de estoque na tabela produtos.', {
+            module: 'produtosRoutes',
+        });
+    } catch (error) {
+        try {
+            await client.rollback();
+        } catch {
+            // ignore rollback error
+        }
+        logger.warn(`Não foi possível reposicionar estoque_minimo antes de estoque: ${error.message}`, {
+            module: 'produtosRoutes',
+        });
+    } finally {
+        client.release();
+    }
+}
+
 async function ensureProdutosTable() {
     if (!tableReadyPromise) {
         tableReadyPromise = (async () => {
@@ -60,6 +170,7 @@ async function ensureProdutosTable() {
                     peso VARCHAR(60),
                     preco_unitario NUMERIC(12, 2) DEFAULT 0,
                     unidade VARCHAR(20) DEFAULT 'un',
+                    estoque_minimo NUMERIC(12, 2) DEFAULT 50,
                     estoque NUMERIC(12, 2) DEFAULT 0,
                     imagem_url TEXT,
                     status VARCHAR(20) DEFAULT 'Ativo',
@@ -87,8 +198,11 @@ async function ensureProdutosTable() {
                     ADD COLUMN IF NOT EXISTS aliq_icms NUMERIC(7, 2) DEFAULT 0,
                     ADD COLUMN IF NOT EXISTS aliq_ipi NUMERIC(7, 2) DEFAULT 0,
                     ADD COLUMN IF NOT EXISTS aliq_pis NUMERIC(7, 2) DEFAULT 0,
-                    ADD COLUMN IF NOT EXISTS aliq_cofins NUMERIC(7, 2) DEFAULT 0
+                    ADD COLUMN IF NOT EXISTS aliq_cofins NUMERIC(7, 2) DEFAULT 0,
+                    ADD COLUMN IF NOT EXISTS estoque_minimo NUMERIC(12, 2) DEFAULT 50
             `);
+
+            await ensureEstoqueMinimoBeforeEstoque();
 
             // Defaults fiscais MG (cerâmica) + alíquotas zeradas no cadastro
             await pool.query(`
@@ -173,6 +287,7 @@ function normalizePayload(body = {}) {
         desconto_acima_de: toNumber(body.desconto_acima_de, 0),
         unidade: String(body.unidade || 'un').trim() || 'un',
         estoque: toNumber(body.estoque, 0),
+        estoque_minimo: Math.max(0, toNumber(body.estoque_minimo, 0)),
         imagem_url: String(body.imagem_url || '').trim() || null,
         status: body.status === 'Inativo' ? 'Inativo' : 'Ativo',
         observacoes: String(body.observacoes || '').trim() || null,
@@ -192,7 +307,8 @@ router.get('/api/produtos', isAuthenticated, async (req, res) => {
         const [rows] = await pool.query(`
             SELECT id, codigo, nome, categoria, altura_cm, largura_cm, comprimento_cm,
                    peso, preco_unitario, preco_milheiro, preco_m2,
-                   desconto_percentual, desconto_acima_de, unidade, estoque, imagem_url, status,
+                   desconto_percentual, desconto_acima_de, unidade,
+                   COALESCE(estoque_minimo, 50) AS estoque_minimo, estoque, imagem_url, status,
                    ncm, cfop_padrao, cst_csosn, aliq_icms, aliq_ipi, aliq_pis, aliq_cofins
             FROM produtos
             ORDER BY nome
@@ -252,15 +368,15 @@ router.post('/api/produtos', isAuthenticated, async (req, res) => {
                 codigo, nome, categoria, descricao,
                 altura_cm, largura_cm, comprimento_cm, peso,
                 preco_unitario, preco_milheiro, preco_m2, desconto_percentual, desconto_acima_de,
-                unidade, estoque, imagem_url, status, observacoes,
+                unidade, estoque, estoque_minimo, imagem_url, status, observacoes,
                 ncm, cfop_padrao, cst_csosn, aliq_icms, aliq_ipi, aliq_pis, aliq_cofins
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             payload.codigo, payload.nome, payload.categoria, payload.descricao,
             payload.altura_cm, payload.largura_cm, payload.comprimento_cm, payload.peso,
             payload.preco_unitario, payload.preco_milheiro, payload.preco_m2,
             payload.desconto_percentual, payload.desconto_acima_de,
-            payload.unidade, payload.estoque, payload.imagem_url,
+            payload.unidade, payload.estoque, payload.estoque_minimo, payload.imagem_url,
             payload.status, payload.observacoes,
             payload.ncm, payload.cfop_padrao, payload.cst_csosn,
             payload.aliq_icms, payload.aliq_ipi, payload.aliq_pis, payload.aliq_cofins,
@@ -305,7 +421,7 @@ router.put('/api/produtos/:id', isAuthenticated, async (req, res) => {
                 altura_cm = ?, largura_cm = ?, comprimento_cm = ?, peso = ?,
                 preco_unitario = ?, preco_milheiro = ?, preco_m2 = ?,
                 desconto_percentual = ?, desconto_acima_de = ?,
-                unidade = ?, estoque = ?, imagem_url = ?,
+                unidade = ?, estoque = ?, estoque_minimo = ?, imagem_url = ?,
                 status = ?, observacoes = ?,
                 ncm = ?, cfop_padrao = ?, cst_csosn = ?,
                 aliq_icms = ?, aliq_ipi = ?, aliq_pis = ?, aliq_cofins = ?,
@@ -316,7 +432,7 @@ router.put('/api/produtos/:id', isAuthenticated, async (req, res) => {
             payload.altura_cm, payload.largura_cm, payload.comprimento_cm, payload.peso,
             payload.preco_unitario, payload.preco_milheiro, payload.preco_m2,
             payload.desconto_percentual, payload.desconto_acima_de,
-            payload.unidade, payload.estoque, payload.imagem_url,
+            payload.unidade, payload.estoque, payload.estoque_minimo, payload.imagem_url,
             payload.status, payload.observacoes,
             payload.ncm, payload.cfop_padrao, payload.cst_csosn,
             payload.aliq_icms, payload.aliq_ipi, payload.aliq_pis, payload.aliq_cofins,
